@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "oxc", "import", "vitest"],
+  "env": { "browser": true, "es2024": true },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "import/no-cycle": "error",
+    "no-unused-vars": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.test.{js,jsx}", "src/test/**"],
+      "env": { "vitest": true }
+    }
+  ]
+}
