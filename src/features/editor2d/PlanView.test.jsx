@@ -276,7 +276,7 @@ describe('inspetor do móvel', () => {
     expect(await screen.findByLabelText('Comprimento')).toBeDisabled()
     expect(screen.getByText('Este modelo tem medidas fixas.')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Eliminar' }))
+    await user.click(within(screen.getByRole('complementary', { name: 'Propriedades' })).getByRole('button', { name: 'Eliminar' }))
     expect(findItem(doc(), bed)).toBeNull()
     expect(screen.getByRole('complementary', { name: 'Propriedades' })).toHaveTextContent('Tipo de divisão')
   })

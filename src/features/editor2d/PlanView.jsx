@@ -5,6 +5,7 @@ import { snapItemPosition } from '@/core/editing'
 import { DEFAULT_SIZE_BOUNDS, ROOM_TYPES } from '@/core/model'
 import { formatLength } from '@/core/units/units.js'
 import { getCatalogEntry, getItemProfile, getItemSizeBounds } from '@/data/catalog/furniture.js'
+import { SelectionActions } from '@/features/selection/SelectionActions.jsx'
 import { AnalysisDefs, AnalysisLayer, CirculationLayer } from '@/features/analysis/AnalysisLayer.jsx'
 import { useElementSize } from '@/hooks/useElementSize.js'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.js'
@@ -154,6 +155,8 @@ export function PlanView() {
           <ScaleBar viewport={viewport} height={size.height} />
         </svg>
       )}
+
+      <SelectionActions hidden={Boolean(interaction) || walkTool} />
 
       {walkTool && <WalkPanel points={walkPoints} path={walkPath} onClose={() => setWalkTool(false)} />}
 

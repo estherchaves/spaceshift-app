@@ -1,6 +1,7 @@
 import { MonitorOff, RotateCcw, Square, TriangleAlert } from 'lucide-react'
 import { lazy, Suspense, useState } from 'react'
 import { Button, EmptyState } from '@/components/ui'
+import { SelectionActions } from '@/features/selection/SelectionActions.jsx'
 import { useEditorStore } from '@/store/editorStore.js'
 import { SceneErrorBoundary } from './SceneErrorBoundary.jsx'
 import { isWebGLAvailable } from './webgl.js'
@@ -13,6 +14,8 @@ const Scene3D = lazy(() => import('./Scene3D.jsx'))
 export function SceneView() {
   const [webgl] = useState(isWebGLAvailable)
   const setViewMode = useEditorStore((state) => state.setViewMode)
+  // Na vista dividida a barra fica só na planta.
+  const showActions = useEditorStore((state) => state.viewMode === '3d' && !state.interaction)
   const backTo2d = (
     <Button icon={Square} onClick={() => setViewMode('2d')}>
       Voltar à planta 2D
@@ -66,6 +69,7 @@ export function SceneView() {
           <Scene3D />
         </Suspense>
       </SceneErrorBoundary>
+      <SelectionActions hidden={!showActions} />
     </section>
   )
 }
