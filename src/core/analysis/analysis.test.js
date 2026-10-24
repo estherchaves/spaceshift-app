@@ -7,8 +7,14 @@ import { analyzeLayout, describeLocation } from './index.js'
  */
 const PROFILES = {
   'round-table': { shape: 'ellipse', role: 'table' },
-  'sofa-corner': { shape: 'corner', role: 'seat' },
-  sofa: { role: 'seat' },
+  'sofa-corner': { shape: 'corner', role: 'seat', usage: 'seat' },
+  sofa: { role: 'seat', usage: 'seat' },
+  wardrobe: { usage: 'wardrobe' },
+  'bed-double': { role: 'bed', usage: 'bed' },
+  'bed-single': { role: 'bed', usage: 'bed' },
+  nightstand: { role: 'nightstand' },
+  desk: { role: 'table', usage: 'desk' },
+  'office-chair': { role: 'chair' },
   'coffee-table': { role: 'coffee-table' },
   'dining-table': { role: 'table' },
   'dining-chair': { role: 'chair' },
@@ -203,6 +209,69 @@ describe('analyzeLayout: avisos de circulação', () => {
     const result = analyze(room(), [sofa])
     expect(result.itemStatus.get(sofa.id)).toBe('error')
     expect(result.issues[0].severity).toBe('error')
+  })
+})
+
+describe('analyzeLayout: zonas de uso', () => {
+  const usage = (result) => result.warnings.filter((w) => w.type === 'usage')
+
+  it('o roupeiro precisa de 70 cm à frente para abrir as portas', () => {
+    const wardrobe = item('wardrobe', 2, 0.3, 1.5, 0.6, 2.2, { name: 'Roupeiro' })
+    const dresser = item('dresser', 2, 0.6 + 0.35 + 0.25, 1.2, 0.5, 0.8, { name: 'Cómoda' })
+    const [issue] = usage(analyze(room(), [wardrobe, dresser]))
+    expect(issue.message).toBe('Roupeiro precisa de 70 cm livres à frente para abrir as portas; tem 35 cm (Cómoda).')
+    expect(issue.itemIds).toEqual([wardrobe.id])
+    // A zona marcada é a frente do roupeiro: 1,5 m × 70 cm.
+    const zs = issue.marker.polygons[0].map((p) => p.z)
+    expect(Math.min(...zs)).toBeCloseTo(0.6)
+    expect(Math.max(...zs)).toBeCloseTo(1.3)
+    expect(usage(analyze(room(), [wardrobe]))).toEqual([])
+  })
+
+  it('a zona roda com o móvel e conta com as paredes', () => {
+    // Roupeiro virado para a parede direita, a 40 cm dela.
+    const wardrobe = item('wardrobe', 5 - 0.4 - 0.3, 2, 1.5, 0.6, 2.2, { name: 'Roupeiro', rotation: 270 })
+    const [issue] = usage(analyze(room(), [wardrobe]))
+    expect(issue.message).toMatch(/tem 40 cm \(parede\)/)
+  })
+
+  it('cama de casal: 60 cm de cada lado; as mesas de cabeceira não contam', () => {
+    const bed = item('bed-double', 1.5, 1.05, 1.66, 2.1, 1, { name: 'Cama de casal' })
+    const nightstand = item('nightstand', 1.5 - 0.83 - 0.25, 0.2, 0.45, 0.4, 0.5)
+    expect(usage(analyze(room(), [bed, nightstand]))).toEqual([])
+    const dresser = item('dresser', 2.33 + 0.3 + 0.25, 1.05, 0.5, 1.2, 0.8, { name: 'Cómoda' })
+    const issues = usage(analyze(room(), [bed, nightstand, dresser]))
+    expect(issues.map((issue) => issue.message)).toEqual([
+      'Cama de casal precisa de 60 cm livres de cada lado para entrar na cama; tem 30 cm (Cómoda).',
+    ])
+  })
+
+  it('cama de solteiro encostada à parede: basta um lado livre', () => {
+    const bed = item('bed-single', 0.48, 1.03, 0.96, 2.06, 0.9, { name: 'Cama' })
+    expect(usage(analyze(room(), [bed]))).toEqual([])
+    const blocker = item('cabinet', 0.96 + 0.2 + 0.25, 1.03, 0.5, 2, 0.8, { name: 'Móvel' })
+    const [issue] = usage(analyze(room(), [bed, blocker]))
+    expect(issue.message).toBe('Cama precisa de 60 cm livres de pelo menos um dos lados para entrar na cama; o melhor lado tem 20 cm.')
+  })
+
+  it('a cadeira da secretária e a mesa de centro do sofá não ocupam a zona de uso', () => {
+    const desk = item('desk', 2, 0.35, 1.4, 0.7, 0.75)
+    const chair = item('office-chair', 2, 0.7 + 0.32, 0.64, 0.64, 1.05)
+    expect(usage(analyze(room(), [desk, chair]))).toEqual([])
+    const sofa = item('sofa', 2.5, 0.46, 2.2, 0.92)
+    const coffee = item('coffee-table', 2.5, 0.92 + 0.3 + 0.3, 1.1, 0.6, 0.4)
+    expect(usage(analyze(room(), [sofa, coffee]))).toEqual([])
+  })
+
+  it('sofá de canto: a zona da frente segue o L', () => {
+    const sofa = item('sofa-corner', 1.35, 0.825, 2.7, 1.65, 0.84)
+    const lamp = item('lamp', 0.25, 1.15, 0.4, 0.4, 1.6, { category: 'lighting' })
+    const [issue] = usage(analyze(room(), [sofa, lamp]))
+    expect(issue.marker.polygons).toHaveLength(1)
+    // Fora da zona (mais abaixo, no canto vazio do L) já não incomoda.
+    const away = { ...lamp, position: { x: 0.25, z: 1.6 } }
+    expect(usage(analyze(room(), [sofa, away]))).toEqual([])
+    expect(analyze(room(), [sofa, away]).errors).toEqual([])
   })
 })
 

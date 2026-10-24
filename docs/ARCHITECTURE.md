@@ -359,8 +359,8 @@ Os testes ficam ao lado do código que testam (`*.test.js`).
   a todas as vistas, por isso a análise corre uma vez por alteração, também
   durante um arrasto (4–7 ms com 12–40 móveis).
 - **Perfil de cada móvel:** o núcleo não conhece o catálogo. O catálogo dá
-  `footprint` (forma) e `role` (seat, coffee-table, chair, table, bed,
-  nightstand) e o store passa `getItemProfile` à análise.
+  `footprint` (forma), `role` (seat, coffee-table, chair, table, bed,
+  nightstand) e `usage` (seat, bed, wardrobe, drawers, desk) e o store passa `getItemProfile` à análise.
 - **Erros (geometria impossível):**
   - fora da divisão: quanto sai por cada parede e a zona exata que sai; se
     o móvel não cabe de todo, diz a medida e sugere rodar 90° quando assim
@@ -376,6 +376,13 @@ Os testes ficam ao lado do código que testam (`*.test.js`).
     cama e mesa de cabeceira), recantos sem saída (dois móveis encostados à
     mesma parede, ou um móvel encostado a uma parede perpendicular), folgas
     ocupadas por outro móvel, nem candeeiros e plantas;
+  - zona de uso ocupada (`usage.js`): espaço livre à frente ou dos lados
+    que o móvel precisa para ser usado, medido até ao primeiro obstáculo ou
+    parede: sofás e poltronas 45 cm à frente, camas 60 cm de cada lado (numa
+    cama de solteiro basta um lado), roupeiro 70 cm, cómoda 60 cm,
+    secretária 75 cm para a cadeira. Móveis usados em conjunto não contam
+    (mesa de cabeceira, mesa de centro, cadeira da secretária) e um móvel
+    sobreposto já é um erro, por isso não se repete aqui;
   - sem acesso: nenhuma zona livre de 60 cm (ou a passagem mínima, se for
     menor) chega ao móvel; cadeiras e decoração ficam de fora;
   - zona isolada: pelo menos 1 m² livre que não se liga ao resto com 60 cm;

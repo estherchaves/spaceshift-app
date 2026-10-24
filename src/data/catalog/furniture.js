@@ -7,7 +7,8 @@
  * procedimentais (Fases 3–5). Preços indicativos em euros.
  * `footprint` é a forma real da pegada para colisões (Fase 6; 'rect' por
  * omissão) e `role` o papel do móvel nas regras de uso conjunto (cadeira e
- * mesa, sofá e mesa de centro, cama e mesa de cabeceira).
+ * mesa, sofá e mesa de centro, cama e mesa de cabeceira); `usage` o espaço
+ * livre que o móvel precisa para ser usado (abrir portas, entrar na cama…).
  *
  * @type {import('@/core/model/types.js').CatalogEntry[]}
  */
@@ -24,6 +25,7 @@ export const FURNITURE_CATALOG = [
     price: 649,
     plan2d: 'sofa',
     model3d: 'sofa',
+    usage: 'seat',
     role: 'seat',
   },
   {
@@ -37,6 +39,7 @@ export const FURNITURE_CATALOG = [
     price: 899,
     plan2d: 'sofa',
     model3d: 'sofa',
+    usage: 'seat',
     role: 'seat',
   },
   {
@@ -50,6 +53,7 @@ export const FURNITURE_CATALOG = [
     price: 1490,
     plan2d: 'sofa-corner',
     model3d: 'sofa-corner',
+    usage: 'seat',
     footprint: 'corner',
     role: 'seat',
   },
@@ -66,6 +70,7 @@ export const FURNITURE_CATALOG = [
     price: 299,
     plan2d: 'bed',
     model3d: 'bed',
+    usage: 'bed',
     role: 'bed',
   },
   {
@@ -79,6 +84,7 @@ export const FURNITURE_CATALOG = [
     price: 749,
     plan2d: 'bed',
     model3d: 'bed',
+    usage: 'bed',
     role: 'bed',
   },
   {
@@ -92,6 +98,7 @@ export const FURNITURE_CATALOG = [
     price: 1190,
     plan2d: 'bed',
     model3d: 'bed',
+    usage: 'bed',
     role: 'bed',
   },
 
@@ -147,6 +154,7 @@ export const FURNITURE_CATALOG = [
     price: 329,
     plan2d: 'desk',
     model3d: 'desk',
+    usage: 'desk',
     role: 'table',
   },
   {
@@ -188,6 +196,7 @@ export const FURNITURE_CATALOG = [
     price: 459,
     plan2d: 'armchair',
     model3d: 'armchair',
+    usage: 'seat',
     role: 'seat',
   },
   {
@@ -216,6 +225,7 @@ export const FURNITURE_CATALOG = [
     price: 590,
     plan2d: 'wardrobe',
     model3d: 'wardrobe',
+    usage: 'wardrobe',
   },
   {
     id: 'bookshelf',
@@ -252,6 +262,7 @@ export const FURNITURE_CATALOG = [
     price: 279,
     plan2d: 'cabinet',
     model3d: 'sideboard',
+    usage: 'drawers',
   },
 
   // Iluminação
@@ -322,9 +333,9 @@ export function getSizeBounds(catalogId, fallback) {
   return entry.resizable ?? { min: entry.dimensions, max: entry.dimensions }
 }
 
-const DEFAULT_PROFILE = { shape: 'rect', role: null }
+const DEFAULT_PROFILE = { shape: 'rect', role: null, usage: null }
 const PROFILES = new Map(
-  FURNITURE_CATALOG.map((entry) => [entry.id, { shape: entry.footprint ?? 'rect', role: entry.role ?? null }]),
+  FURNITURE_CATALOG.map((entry) => [entry.id, { shape: entry.footprint ?? 'rect', role: entry.role ?? null, usage: entry.usage ?? null }]),
 )
 
 /** Perfil de um móvel para a análise: forma da pegada e papel nas regras de uso. */

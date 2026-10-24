@@ -71,6 +71,7 @@
  * @property {number} [elevation]
  * @property {'rect'|'ellipse'|'corner'} [footprint]  forma real da pegada (colisões)
  * @property {'seat'|'coffee-table'|'chair'|'table'|'bed'|'nightstand'} [role]  papel nas regras de uso conjunto (análise)
+ * @property {'seat'|'bed'|'wardrobe'|'drawers'|'desk'} [usage]  espaço livre necessário para usar o móvel
  */
 
 export {}

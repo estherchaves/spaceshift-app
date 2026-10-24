@@ -2,6 +2,7 @@ import { clipByHalfPlane, getItemShape, intersectConvex, polygonsDistance, polyg
 import { pointInPolygon } from '../geometry/polygon.js'
 import { formatCentimetres, formatLength } from '../units/units.js'
 import { buildCirculationGrid, zoneReaches, zoneRuns } from './circulation.js'
+import { SINGLE_BED_MAX_WIDTH, USAGE_RULES, measureUsage } from './usage.js'
 import {
   ACCESS_WIDTH,
   MAX_TUCK_DEPTH,
@@ -22,7 +23,8 @@ import {
  * marcador geométrico (em metros) que as vistas desenham.
  *
  * Erros (geometria impossível): fora da divisão, sobreposição, acima do teto.
- * Avisos (conforto): passagem estreita, móvel sem acesso, zona isolada.
+ * Avisos (conforto): passagem estreita, zona de uso ocupada, móvel sem
+ * acesso, zona isolada.
  *
  * Duas larguras: a passagem mínima configurada (corredores, 90 cm por
  * omissão) mede as passagens e a zona de circulação; o acesso a cada
@@ -34,7 +36,7 @@ const EPSILON = 0.001
 const MIN_VISIBLE_ZONE = 0.1
 const PERPENDICULAR = { left: ['top', 'bottom'], right: ['top', 'bottom'], top: ['left', 'right'], bottom: ['left', 'right'] }
 
-/** @typedef {{shape?: 'rect'|'ellipse'|'corner', role?: string|null}} ItemProfile */
+/** @typedef {{shape?: 'rect'|'ellipse'|'corner', role?: string|null, usage?: string|null}} ItemProfile */
 
 /** As quatro paredes interiores: distância de um ponto a cada uma e projeção nela. */
 function wallsFor(room) {
@@ -58,7 +60,7 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
   const walls = wallsFor(room)
   const labels = itemLabels(items)
   const entries = items.map((item) => {
-    const profile = { shape: 'rect', role: null, ...getProfile(item) }
+    const profile = { shape: 'rect', role: null, usage: null, ...getProfile(item) }
     const shape = getItemShape(item, profile.shape)
     // Nome para as mensagens: com número quando há vários iguais ("Cadeira de jantar 2").
     return { item: { ...item, name: labels.get(item.id) }, profile, shape, bounds: shapeBounds(shape) }
@@ -117,6 +119,7 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
   }
 
   // 2. Sobreposições (forma real + altura) e acima do teto.
+  for (const entry of entries) entry.overlaps = new Set()
   for (let a = 0; a < entries.length; a++) {
     for (let b = a + 1; b < entries.length; b++) {
       const A = entries[a]
@@ -137,6 +140,8 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
       }
       if (depth === 0) continue
       if (isTuckPair(A.profile, B.profile) && depth <= MAX_TUCK_DEPTH) continue
+      A.overlaps.add(B)
+      B.overlaps.add(A)
       issues.push({
         id: `overlap:${A.item.id}:${B.item.id}`,
         severity: 'error',
@@ -223,7 +228,37 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
     }
   }
 
-  // 4. Circulação: zona de circulação, acesso a cada móvel e zonas isoladas.
+  // 4. Zonas de uso: frente do roupeiro, lados da cama, frente do sofá…
+  for (const entry of walkers) {
+    const usage = entry.profile.usage
+    if (!USAGE_RULES[usage]) continue
+    const obstacles = walkers
+      // Um móvel sobreposto já é um erro: não se repete como zona de uso ocupada.
+      .filter((other) => other !== entry && !entry.overlaps.has(other) && !isCompanionPair(entry.profile, other.profile))
+      .map((other) => ({ name: other.item.name, shape: other.shape }))
+    const zones = measureUsage(entry.item, usage, entry.profile.shape, obstacles, room)
+    const blocked = zones.filter((zone) => zone.free < zone.required - EPSILON)
+    if (blocked.length === 0) continue
+    const rule = USAGE_RULES[usage]
+    const name = entry.item.name
+    // Numa cama estreita basta um dos lados livre.
+    if (usage === 'bed' && entry.item.dimensions.width <= SINGLE_BED_MAX_WIDTH) {
+      if (blocked.length < zones.length) continue
+      const best = Math.max(...zones.map((zone) => zone.free))
+      issues.push(usageIssue(entry, 'sides', zones.map((zone) => zone.polygon), {
+        message: `${name} precisa de ${formatCentimetres(rule.depth)} livres de pelo menos um dos lados ${rule.purpose}; o melhor lado tem ${formatCentimetres(best)}.`,
+      }))
+      continue
+    }
+    for (const zone of blocked) {
+      const where = zone.side === 'front' ? 'à frente' : 'de cada lado'
+      issues.push(usageIssue(entry, `${zone.side}:${zones.indexOf(zone)}`, [zone.polygon], {
+        message: `${name} precisa de ${formatCentimetres(rule.depth)} livres ${where} ${rule.purpose}; tem ${formatCentimetres(zone.free)} (${zone.blocker}).`,
+      }))
+    }
+  }
+
+  // 5. Circulação: zona de circulação, acesso a cada móvel e zonas isoladas.
   const obstacles = walkers.map((entry) => entry.shape)
   const corridors = buildCirculationGrid(room, obstacles, passage)
   const grid = access === passage ? corridors : buildCirculationGrid(room, obstacles, access)
@@ -279,10 +314,12 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
   const errors = issues.filter((issue) => issue.severity === 'error')
   const warnings = issues.filter((issue) => issue.severity === 'warning')
   // Estado de cada móvel nas vistas: erro em qualquer problema geométrico;
-  // aviso só quando o problema é o próprio móvel (sem acesso). As passagens
+  // aviso só quando o problema é o próprio móvel (sem acesso, zona de uso). As passagens
   // estreitas são de dois móveis e mostram-se com a cota, não a contornar.
   const itemStatus = new Map()
-  for (const issue of warnings) if (issue.type === 'access') for (const id of issue.itemIds) itemStatus.set(id, 'warning')
+  for (const issue of warnings) {
+    if (issue.type === 'access' || issue.type === 'usage') for (const id of issue.itemIds) itemStatus.set(id, 'warning')
+  }
   for (const issue of errors) for (const id of issue.itemIds) itemStatus.set(id, 'error')
 
   return {
@@ -297,6 +334,19 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
       passage,
       access,
     },
+  }
+}
+
+function usageIssue(entry, key, polygons, { message }) {
+  return {
+    id: `usage:${entry.item.id}:${key}`,
+    severity: 'warning',
+    type: 'usage',
+    title: 'Espaço de uso',
+    message,
+    hint: 'Afaste o que está nessa zona ou rode o móvel.',
+    itemIds: [entry.item.id],
+    marker: { kind: 'region', polygons },
   }
 }
 
