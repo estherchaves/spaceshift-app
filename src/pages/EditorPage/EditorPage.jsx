@@ -2,7 +2,6 @@ import { Library, Map, SlidersHorizontal } from 'lucide-react'
 import { AppShell } from '@/components/layout'
 import { SegmentedControl } from '@/components/ui'
 import { CatalogPanel } from '@/features/catalog/CatalogPanel.jsx'
-import { PlanView } from '@/features/editor2d/PlanView.jsx'
 import { PropertiesPanel } from '@/features/inspector/PropertiesPanel.jsx'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.js'
 import {
@@ -15,11 +14,12 @@ import {
 } from '@/store/commands.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { EditorStatusBar } from './EditorStatusBar.jsx'
+import { EditorWorkspace } from './EditorWorkspace.jsx'
 import { EditorTopBar } from './EditorTopBar.jsx'
 
 const MOBILE_PANELS = [
   { value: 'catalog', label: 'Catálogo', icon: Library },
-  { value: 'plan', label: 'Planta', icon: Map },
+  { value: 'plan', label: 'Vista', icon: Map },
   { value: 'properties', label: 'Propriedades', icon: SlidersHorizontal },
 ]
 
@@ -56,7 +56,7 @@ export function EditorPage() {
         />
       }
       left={<CatalogPanel />}
-      main={<PlanView />}
+      main={<EditorWorkspace />}
       right={<PropertiesPanel />}
       statusBar={<EditorStatusBar />}
     />

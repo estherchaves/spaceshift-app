@@ -1,10 +1,11 @@
-import { Box, Download, Redo2, Save, Square, Undo2 } from 'lucide-react'
+import { Download, Redo2, Save, Undo2 } from 'lucide-react'
 import { Logo } from '@/components/brand/Logo.jsx'
 import { Button, IconButton, SegmentedControl } from '@/components/ui'
 import { selectDirty, selectProjectName } from '@/store/selectors.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
 import { ProjectNameField } from './ProjectNameField.jsx'
+import { VIEW_MODE_OPTIONS } from './viewModes.js'
 import './EditorTopBar.css'
 
 /*
@@ -15,7 +16,6 @@ import './EditorTopBar.css'
 const PENDING_HISTORY = 'Disponível com o histórico (Fase 7)'
 const PENDING_SAVE = 'Disponível com a gravação local (Fase 7)'
 const PENDING_EXPORT = 'Disponível com a exportação (Fase 7)'
-const PENDING_3D = 'A vista 3D chega na Fase 5'
 
 export function EditorTopBar() {
   const name = useProjectStore(selectProjectName)
@@ -38,10 +38,7 @@ export function EditorTopBar() {
           label="Modo de visualização"
           value={viewMode}
           onChange={setViewMode}
-          options={[
-            { value: '2d', label: '2D', icon: Square },
-            { value: '3d', label: '3D', icon: Box, disabled: true, hint: PENDING_3D },
-          ]}
+          options={VIEW_MODE_OPTIONS}
         />
       </div>
 

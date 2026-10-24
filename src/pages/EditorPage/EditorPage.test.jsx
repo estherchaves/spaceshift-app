@@ -1,6 +1,6 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createFurnitureItem, getActiveLayout } from '@/core/model'
 import { getCatalogEntry } from '@/data/catalog/furniture.js'
 import { resetEditorStore, useEditorStore } from '@/store/editorStore.js'
@@ -27,16 +27,60 @@ describe('EditorPage: estrutura', () => {
     expect(statusBar().getByText('Sem conflitos')).toBeInTheDocument()
   })
 
-  it('ações de fases seguintes estão desativadas e explicam porquê', async () => {
-    const user = userEvent.setup()
+  it('ações de fases seguintes estão desativadas e explicam porquê', () => {
     render(<EditorPage />)
     const save = screen.getByRole('button', { name: /Guardar/ })
     expect(save).toHaveAttribute('aria-disabled', 'true')
     expect(save).toHaveAccessibleDescription(/Fase 7/)
     expect(screen.getByRole('button', { name: 'Anular' })).toHaveAccessibleDescription(/Fase 7/)
-    expect(screen.getByRole('radio', { name: /3D/ })).toHaveAttribute('aria-disabled', 'true')
-    await user.click(screen.getByRole('radio', { name: /3D/ }))
+  })
+})
+
+describe('EditorPage: modos de visualização', () => {
+  // O jsdom não tem WebGL: a vista 3D mostra a mensagem de indisponibilidade
+  // sem tentar carregar o Three.js. A cena em si é testada em scene3d/.
+  beforeEach(() => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null)
+  })
+  afterEach(() => vi.restoreAllMocks())
+
+  const plan = () => screen.queryByRole('group', { name: /Planta da divisão/ })
+  const viewSwitch = () => within(screen.getByRole('radiogroup', { name: 'Modo de visualização' }))
+  const scene = () => screen.queryByRole('region', { name: 'Vista 3D' })
+
+  it('alterna entre 2D, 3D e dividido', async () => {
+    const user = userEvent.setup()
+    render(<EditorPage />)
+    expect(plan()).toBeInTheDocument()
+    expect(scene()).not.toBeInTheDocument()
+
+    await user.click(viewSwitch().getByRole('radio', { name: /3D/ }))
+    expect(useEditorStore.getState().viewMode).toBe('3d')
+    expect(plan()).not.toBeInTheDocument()
+    expect(scene()).toBeInTheDocument()
+
+    await user.click(viewSwitch().getByRole('radio', { name: /Dividido/ }))
+    expect(plan()).toBeInTheDocument()
+    expect(scene()).toBeInTheDocument()
+  })
+
+  it('o seletor para ecrãs estreitos controla o mesmo modo', async () => {
+    const user = userEvent.setup()
+    render(<EditorPage />)
+    const narrow = within(screen.getByRole('radiogroup', { name: /ecrã estreito/ }))
+    await user.click(narrow.getByRole('radio', { name: /3D/ }))
+    expect(useEditorStore.getState().viewMode).toBe('3d')
+    expect(viewSwitch().getByRole('radio', { name: /3D/ })).toHaveAttribute('aria-checked', 'true')
+  })
+
+  it('sem WebGL explica o motivo e permite voltar à planta', async () => {
+    const user = userEvent.setup()
+    useEditorStore.getState().setViewMode('3d')
+    render(<EditorPage />)
+    expect(screen.getByText('A vista 3D não está disponível neste navegador')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Voltar à planta 2D/ }))
     expect(useEditorStore.getState().viewMode).toBe('2d')
+    expect(plan()).toBeInTheDocument()
   })
 })
 
@@ -165,6 +209,6 @@ describe('EditorPage: navegação em ecrãs pequenos', () => {
     expect(container.querySelector('.app-shell')).toHaveAttribute('data-mobile-panel', 'catalog')
     await user.keyboard('{ArrowRight}')
     expect(useEditorStore.getState().mobilePanel).toBe('plan')
-    expect(tabs.getByRole('radio', { name: 'Planta' })).toHaveFocus()
+    expect(tabs.getByRole('radio', { name: 'Vista' })).toHaveFocus()
   })
 })

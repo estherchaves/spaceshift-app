@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 /**
  * Estado efémero da interface: não é guardado com o projeto.
- *  - viewMode: vista da área central ('2d' | '3d')
+ *  - viewMode: vista da área central ('2d' | '3d' | 'split', planta e 3D lado a lado)
  *  - mobilePanel: painel visível em ecrãs estreitos ('catalog' | 'plan' | 'properties')
  *  - selectedItemId: móvel selecionado
  *  - interaction: gesto em curso na planta. Durante o arrasto, `preview`

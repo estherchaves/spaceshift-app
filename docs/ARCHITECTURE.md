@@ -170,8 +170,9 @@ spaceshift/
     │   │                       #   CatalogPreview (mesmo símbolo da planta), filterCatalog
     │   ├── inspector/          # ✓ PropertiesPanel, RoomInspector, ItemInspector,
     │   │                       #   FinishPicker (acabamento, cor, bloqueio, altura ao chão)
-    │   ├── scene3d/            # Fase 5: Scene3D, Room3D, Furniture3D,
-    │   │                       # models/ (geometria procedimental), Lights
+    │   ├── scene3d/            # ✓ SceneView (lazy, WebGL, erros), Scene3D, CameraRig,
+    │   │                       #   Furniture3D, useItemDrag3D, models/ (peças e materiais),
+    │   │                       #   room/ (paredes, corte, chão procedimental)
     │   ├── analysis/           # Fase 6: painel de problemas e marcadores
     │   ├── projects/           # Fase 7: UI de gestão de projetos e disposições
     │   └── export/             # Fase 7: PNG, JSON, ficha de impressão
@@ -295,3 +296,44 @@ Os testes ficam ao lado do código que testam (`*.test.js`).
   móvel. Para a mesa redonda e o sofá de canto isto é conservador (pode
   assinalar um conflito num canto vazio). Uma forma exata por tipo pode ser
   adicionada na Fase 6 sem mudar o modelo de dados.
+
+## 12. Vista 3D (Fase 5)
+
+- **Mesmo estado, duas vistas:** a cena lê `useDisplayedItems`, tal como a
+  planta e a barra inferior. Um gesto em qualquer vista escreve só
+  `editorStore.interaction.preview`; o documento muda uma vez, ao largar.
+  Por isso a outra vista acompanha o gesto em tempo real e o futuro
+  histórico (Fase 7) recebe um único passo por gesto.
+- **Modelos procedimentais:** `models/furnitureModels.js` descreve cada
+  móvel como uma lista de peças (caixa, caixa arredondada, cilindro, cone,
+  esfera) em função das medidas. É puro e testado: todas as peças cabem nas
+  medidas do móvel, assentam no chão e continuam coerentes nos limites de
+  redimensionamento. `FurnitureModel` converte as peças em meshes com
+  geometrias unitárias escaladas. Sem ficheiros nem URLs externos.
+- **Materiais:** `models/materials.js` escolhe rugosidade/metalicidade pelo
+  acabamento (linho, veludo, pele, carvalho, latão, vidro…) e pelo papel da
+  peça (estrutura, almofada, metal, abajur…).
+- **Divisão:** `room/roomGeometry.js` (puro) gera as paredes por fora do
+  retângulo interior e decide o corte automático: uma parede baixa para
+  rodapé quando a câmara está do lado de fora do seu plano. O chão usa uma
+  textura desenhada num canvas local (`room/floorPattern.js`: tábuas,
+  mosaico, microcimento ou alcatifa, com gerador pseudo-aleatório fixo).
+- **Luz:** luz hemisférica, luz direcional com sombras, sombras de contacto
+  e um `Environment` feito só de `Lightformer` (reflexos sem mapas HDR).
+- **Câmara:** `OrbitControls` com amortecimento e limite para não passar
+  abaixo do chão; vistas rápidas Perspetiva, Vista de cima, Frontal e
+  Enquadrar com transição curta (`CameraRig`).
+- **Arrasto no 3D:** `useItemDrag3D` captura o ponteiro, interseta o raio
+  com o plano horizontal à altura do ponto agarrado e usa o mesmo
+  `moveItem` (com snap) da planta. Os controlos da câmara ficam desligados
+  durante o gesto. Móveis bloqueados selecionam-se mas não se movem.
+- **Desempenho:** `frameloop="demand"` (só desenha quando algo muda) e
+  carregamento diferido: o Three.js (~1 MB) é um chunk à parte que só é
+  descarregado ao abrir a vista 3D; o editor 2D inicial fica em ~300 kB.
+- **Robustez:** sem WebGL aparece uma explicação e um botão para voltar à
+  planta; um erro na cena fica isolado (`SceneErrorBoundary`) com opção de
+  tentar novamente, sem afetar o projeto.
+- **Testes:** funções puras (paredes, corte, câmara, raio-chão, padrões do
+  chão) e grafo de cena com `@react-three/test-renderer` (meshes por peça,
+  posição/rotação, seleção/conflito, cabo do candeeiro, arrasto com
+  pré-visualização e gravação ao largar, corte de paredes por frame).

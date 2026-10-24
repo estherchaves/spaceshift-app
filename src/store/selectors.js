@@ -56,7 +56,7 @@ export function computeLayoutMetrics(room, items) {
 
 /**
  * Móveis tal como devem ser mostrados: os do documento com a pré-visualização
- * do gesto em curso aplicada. A planta, a barra inferior e (na Fase 5) a cena
+ * do gesto em curso aplicada. A planta, a barra inferior e a cena
  * 3D usam esta lista, por isso todas as vistas mostram o mesmo estado.
  */
 export function useDisplayedItems() {
