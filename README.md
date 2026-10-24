@@ -6,7 +6,9 @@ comprar um móvel: desenha-se a divisão à escala, colocam-se os móveis
 com as medidas reais e a aplicação mostra, em 2D e em 3D, o que não
 cabe, o que se sobrepõe e por onde já não se consegue andar.
 
-![Editor com a planta e a análise de circulação](docs/images/editor.png)
+![Demonstração: portas, «passa pela porta?» e percurso a pé](docs/images/demo.gif)
+
+**Experimentar:** <https://estherchaves.github.io/spaceshift-app/> (funciona no computador, tablet e telemóvel, e pode ser instalado como app)
 
 ## O que faz
 
@@ -46,9 +48,9 @@ cabe, o que se sobrepõe e por onde já não se consegue andar.
   computador, tablet e telemóvel, respeito por «reduzir movimento» e
   interface própria para ecrãs pequenos.
 
-| Comparar disposições | Ficha para imprimir | Telemóvel |
-| --- | --- | --- |
-| ![Comparação de duas disposições](docs/images/comparar.png) | ![Ficha do projeto em A4](docs/images/ficha.png) | ![Editor no telemóvel](docs/images/telemovel.png) |
+| Editor | Comparar disposições | Ficha para imprimir | Telemóvel |
+| --- | --- | --- | --- |
+| ![Editor com a planta e a análise de circulação](docs/images/editor.png) | ![Comparação de duas disposições](docs/images/comparar.png) | ![Ficha do projeto em A4](docs/images/ficha.png) | ![Editor no telemóvel](docs/images/telemovel.png) |
 
 ## Tecnologia
 
@@ -83,6 +85,10 @@ npm run build      # build de produção em dist/
 npm run preview    # servir o build
 npm run check      # lint + testes + build
 ```
+
+Publicar: cada push na `main` corre o lint, os testes e o build e publica
+no GitHub Pages (`.github/workflows/deploy.yml`). O caminho da app vem de
+`BASE_PATH`; sem ele a app fica na raiz, como no Vercel.
 
 Na primeira abertura, «Abrir projeto de exemplo» cria uma sala com duas
 disposições para experimentar a comparação.

@@ -5,6 +5,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // No GitHub Pages a app fica em /<repositório>/; o workflow de publicação
+  // passa esse caminho em BASE_PATH. Localmente e no Vercel é a raiz.
+  base: process.env.BASE_PATH ?? '/',
   plugins: [
     react(),
     // PWA: instalável e usável sem internet. Não há servidor, por isso basta
@@ -20,8 +23,8 @@ export default defineConfig({
         short_name: 'SpaceShift',
         description: 'Desenhe uma divisão, coloque móveis à escala e veja se tudo cabe, em 2D e 3D.',
         lang: 'pt-PT',
-        start_url: '/',
-        scope: '/',
+        start_url: './',
+        scope: './',
         display: 'standalone',
         background_color: '#f3f2ef',
         theme_color: '#f3f2ef',
