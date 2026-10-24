@@ -20,6 +20,8 @@ export const FURNITURE_CATEGORIES = {
   tables: { label: 'Mesas' },
   chairs: { label: 'Cadeiras' },
   storage: { label: 'Armários' },
+  kitchen: { label: 'Cozinha' },
+  media: { label: 'TV' },
   lighting: { label: 'Iluminação' },
   decor: { label: 'Decoração' },
 }

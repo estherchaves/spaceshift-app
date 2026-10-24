@@ -286,6 +286,128 @@ function Plant({ w, h }) {
   )
 }
 
+/* Cozinha: a bancada vê-se de cima, com a frente (+y) marcada. */
+function KitchenBase({ w, h, widthM }) {
+  const L = -w / 2
+  const T = -h / 2
+  const doors = Math.max(1, Math.round(widthM / 0.6))
+  return (
+    <>
+      <Box x={L} y={T} w={w} h={h} />
+      <Line x1={L} y1={T + h * 0.92} x2={L + w} y2={T + h * 0.92} />
+      {Array.from({ length: doors - 1 }, (_, i) => (
+        <Line key={i} x1={L + ((i + 1) * w) / doors} y1={T + h * 0.92} x2={L + ((i + 1) * w) / doors} y2={T + h} />
+      ))}
+    </>
+  )
+}
+
+function KitchenSink({ w, h, widthM }) {
+  const bw = Math.min(w * 0.62, (w / widthM) * 0.5)
+  const bh = h * 0.6
+  return (
+    <>
+      <KitchenBase w={w} h={h} widthM={widthM} />
+      <Box x={-bw / 2} y={-h / 2 + h * 0.22} w={bw} h={bh} rx={Math.min(bw, bh) * 0.12} className="sym-light" />
+      <circle className="sym-strong" cx={0} cy={r(-h / 2 + h * 0.11)} r={r(Math.min(w, h) * 0.05)} />
+      <circle className="sym-outline" cx={0} cy={r(-h / 2 + h * 0.22 + bh * 0.7)} r={r(Math.min(bw, bh) * 0.08)} />
+    </>
+  )
+}
+
+function KitchenCooker({ w, h, widthM }) {
+  const rad = Math.min(w, h) * 0.15
+  return (
+    <>
+      <KitchenBase w={w} h={h} widthM={widthM} />
+      <Box x={-w / 2 + w * 0.06} y={-h / 2 + h * 0.06} w={w * 0.88} h={h * 0.8} rx={2} className="sym-strong" />
+      {[
+        [-0.22, -0.2],
+        [0.22, -0.2],
+        [-0.22, 0.18],
+        [0.22, 0.18],
+      ].map(([fx, fy]) => (
+        <circle key={`${fx}${fy}`} className="sym-burner" cx={r(fx * w)} cy={r(-h * 0.04 + fy * h)} r={r(rad)} />
+      ))}
+    </>
+  )
+}
+
+function Appliance({ w, h }) {
+  const L = -w / 2
+  const T = -h / 2
+  return (
+    <>
+      <Box x={L} y={T} w={w} h={h} rx={1.5} />
+      <Box x={L + w * 0.1} y={T + h * 0.15} w={w * 0.8} h={h * 0.6} className="sym-outline" />
+      <Line x1={L + w * 0.3} y1={T + h * 0.9} x2={L + w * 0.7} y2={T + h * 0.9} className="sym-strong-line" />
+    </>
+  )
+}
+
+function Fridge({ w, h }) {
+  const L = -w / 2
+  const T = -h / 2
+  return (
+    <>
+      <Box x={L} y={T} w={w} h={h} rx={2} />
+      <Line x1={L} y1={T + h * 0.9} x2={L + w} y2={T + h * 0.9} />
+      <Line x1={L + w * 0.62} y1={T + h * 0.95} x2={L + w * 0.88} y2={T + h * 0.95} className="sym-strong-line" />
+      <Box x={L + w * 0.08} y={T + h * 0.08} w={w * 0.84} h={h * 0.74} rx={1} className="sym-outline" />
+    </>
+  )
+}
+
+/** Armário suspenso: tracejado, porque está acima da bancada. */
+function WallCabinet({ w, h, widthM }) {
+  const L = -w / 2
+  const T = -h / 2
+  const doors = Math.max(1, Math.round(widthM / 0.6))
+  return (
+    <>
+      <Box x={L} y={T} w={w} h={h} className="sym-ghost" />
+      {Array.from({ length: doors - 1 }, (_, i) => (
+        <Line key={i} x1={L + ((i + 1) * w) / doors} y1={T} x2={L + ((i + 1) * w) / doors} y2={T + h} className="sym-dashed" />
+      ))}
+      <Line x1={L} y1={T} x2={L + w} y2={T + h} className="sym-faint" />
+    </>
+  )
+}
+
+function Island({ w, h }) {
+  const L = -w / 2
+  const T = -h / 2
+  const overhang = h * 0.28
+  return (
+    <>
+      <Box x={L} y={T} w={w} h={h} rx={2} />
+      <Line x1={L} y1={T + h - overhang} x2={L + w} y2={T + h - overhang} className="sym-dashed" />
+    </>
+  )
+}
+
+function Stool({ w, h }) {
+  return (
+    <>
+      <ellipse className="sym-fill" cx={0} cy={0} rx={r(w / 2)} ry={r(h / 2)} />
+      <ellipse className="sym-outline" cx={0} cy={0} rx={r(w * 0.3)} ry={r(h * 0.3)} />
+    </>
+  )
+}
+
+/** Televisão: ecrã fino atrás (−y) e o pé à frente. */
+function Tv({ w, h }) {
+  const L = -w / 2
+  const T = -h / 2
+  const panel = Math.max(2, Math.min(h, h * 0.25))
+  return (
+    <>
+      <Box x={-w * 0.18} y={T} w={w * 0.36} h={h} rx={1} className="sym-light" />
+      <Box x={L} y={T + (h - panel) / 2} w={w} h={panel} rx={1} className="sym-strong" />
+    </>
+  )
+}
+
 function Fallback({ w, h }) {
   return <Box x={-w / 2} y={-h / 2} w={w} h={h} rx={2} />
 }
@@ -307,6 +429,15 @@ const PLAN_SYMBOLS = {
   pendant: Pendant,
   rug: Rug,
   plant: Plant,
+  'kitchen-base': KitchenBase,
+  'kitchen-sink': KitchenSink,
+  'kitchen-cooker': KitchenCooker,
+  appliance: Appliance,
+  fridge: Fridge,
+  'wall-cabinet': WallCabinet,
+  island: Island,
+  stool: Stool,
+  tv: Tv,
 }
 
 /**

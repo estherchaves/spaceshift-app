@@ -1,4 +1,4 @@
-import { Archive, Armchair, BedDouble, Flower2, LampFloor, LayoutGrid, Sofa, Table2 } from 'lucide-react'
+import { Archive, Armchair, BedDouble, CookingPot, Flower2, LampFloor, LayoutGrid, Sofa, Table2, Tv } from 'lucide-react'
 
 export const CATEGORY_ICONS = {
   all: LayoutGrid,
@@ -7,6 +7,8 @@ export const CATEGORY_ICONS = {
   tables: Table2,
   chairs: Armchair,
   storage: Archive,
+  kitchen: CookingPot,
+  media: Tv,
   lighting: LampFloor,
   decor: Flower2,
 }

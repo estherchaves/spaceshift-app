@@ -93,3 +93,9 @@
   stroke: color-mix(in srgb, var(--item-color) 60%, var(--color-graphite));
   stroke-width: 0.6;
 }
+
+.plan-symbol .sym-burner {
+  fill: none;
+  stroke: color-mix(in srgb, var(--item-color) 40%, #ffffff);
+  stroke-width: 1;
+}

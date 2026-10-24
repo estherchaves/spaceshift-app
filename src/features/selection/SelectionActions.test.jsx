@@ -18,10 +18,11 @@ beforeEach(() => {
 })
 
 describe('barra do móvel selecionado', () => {
-  it('não aparece sem seleção', () => {
+  it('sem seleção mostra a divisão', () => {
     clearSelection()
     render(<SelectionActions />)
-    expect(screen.queryByRole('toolbar')).toBeNull()
+    expect(screen.getByRole('toolbar', { name: 'Divisão' })).toHaveTextContent('Divisão')
+    expect(screen.queryByRole('toolbar', { name: /Ações/ })).toBeNull()
   })
 
   it('elimina o móvel selecionado', async () => {
@@ -31,7 +32,7 @@ describe('barra do móvel selecionado', () => {
     await user.click(bar(`Ações de ${name}`).getByRole('button', { name: 'Eliminar' }))
     expect(findItem(doc(), sofa)).toBeFalsy()
     expect(useEditorStore.getState().selectedItemId).toBeNull()
-    expect(screen.queryByRole('toolbar')).toBeNull()
+    expect(screen.queryByRole('toolbar', { name: /Ações/ })).toBeNull()
   })
 
   it('roda, duplica e bloqueia; bloqueado não se elimina', async () => {
@@ -60,5 +61,45 @@ describe('barra do móvel selecionado', () => {
   it('fica escondida durante um gesto', () => {
     render(<SelectionActions hidden />)
     expect(screen.queryByRole('toolbar')).toBeNull()
+  })
+})
+
+describe('medidas da divisão', () => {
+  const room = () => doc().room
+
+  it('muda comprimento, largura e altura num só passo', async () => {
+    const user = userEvent.setup()
+    clearSelection()
+    render(<SelectionActions />)
+    await user.click(screen.getByRole('button', { name: 'Alterar medidas' }))
+    const dialog = within(screen.getByRole('dialog', { name: 'Medidas da divisão' }))
+    for (const [label, value] of [['Comprimento', '6,4'], ['Largura', '3.8'], ['Altura do teto', '2,9']]) {
+      const field = dialog.getByLabelText(label)
+      await user.clear(field)
+      await user.type(field, value)
+      await user.tab()
+    }
+    await user.click(dialog.getByRole('button', { name: 'Aplicar' }))
+    expect(room()).toMatchObject({ width: 6.4, depth: 3.8, wallHeight: 2.9 })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(screen.getByRole('toolbar', { name: 'Divisão' })).toHaveTextContent('6,40 m × 3,80 m')
+    useProjectStore.getState().undo()
+    expect(room().width).not.toBe(6.4)
+  })
+
+  it('avisa quando um móvel fica de fora e cancelar não muda nada', async () => {
+    const user = userEvent.setup()
+    const before = room()
+    clearSelection()
+    render(<SelectionActions />)
+    await user.click(screen.getByRole('button', { name: 'Alterar medidas' }))
+    const dialog = within(screen.getByRole('dialog', { name: 'Medidas da divisão' }))
+    const field = dialog.getByLabelText('Largura')
+    await user.clear(field)
+    await user.type(field, '1,2')
+    await user.tab()
+    expect(dialog.getByRole('status')).toHaveTextContent('fica fora da divisão')
+    await user.click(dialog.getByRole('button', { name: 'Cancelar' }))
+    expect(room()).toBe(before)
   })
 })

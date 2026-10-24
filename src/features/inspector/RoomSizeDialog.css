@@ -1,0 +1,11 @@
+.room-size__summary {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+
+.room-size__hint {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

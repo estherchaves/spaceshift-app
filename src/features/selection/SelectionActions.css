@@ -1,7 +1,7 @@
 .selection-actions {
   position: absolute;
   top: var(--space-3);
-  left: 50%;
+  left: var(--space-3);
   z-index: 2;
   display: flex;
   align-items: center;
@@ -12,7 +12,6 @@
   border-radius: var(--radius-md);
   background: var(--color-surface);
   box-shadow: var(--shadow-md);
-  transform: translateX(-50%);
 }
 
 .selection-actions__name {
@@ -29,4 +28,11 @@
 .selection-actions__delete:not(:disabled, [aria-disabled='true']) {
   --btn-fg: var(--color-danger);
   --btn-bg-hover: var(--color-danger-soft);
+}
+
+.selection-actions__size {
+  margin-left: var(--space-1);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-weight: 400;
 }

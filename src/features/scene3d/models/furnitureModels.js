@@ -20,7 +20,8 @@ import { CORNER_SOFA } from '@/core/geometry/shapes.js'
  *   topo tem o diâmetro total e a base fica mais estreita (vaso); num cone
  *   a base tem o diâmetro total e o topo fica mais estreito (abajur).
  *   role: 'main' (cor do móvel) | 'soft' (almofadas, variante clara) |
- *         'wood' | 'metal' | 'linen' | 'shade' | 'pot' | 'leaf' | 'book' | 'dark'
+ *         'wood' | 'metal' | 'linen' | 'shade' | 'pot' | 'leaf' | 'book' | 'dark' |
+ *         'counter' (bancada) | 'steel' (inox) | 'screen' (ecrã)
  */
 
 const box = (position, size, role = 'main', extra = {}) => ({ shape: 'box', position, size, role, ...extra })
@@ -317,6 +318,137 @@ function plant(w, d, h) {
   return parts
 }
 
+/*
+ * Cozinha. Os módulos baixos têm rodapé recuado, corpo, frentes e a
+ * bancada (4 cm) por cima, à face da frente.
+ */
+const PLINTH = 0.1
+const WORKTOP = 0.04
+
+function kitchenBase(w, d, h, { doorWidth = 0.6, drawers = 0, recess = 0 } = {}) {
+  // `recess` baixa a bancada uns milímetros para a cuba ou a placa ficarem por cima sem se sobreporem.
+  const bodyTop = h - WORKTOP
+  const bodyH = bodyTop - PLINTH
+  const doors = Math.max(1, Math.round(w / doorWidth))
+  const parts = [
+    box([0, PLINTH / 2, -0.03], [w - 0.01, PLINTH, d - 0.06], 'dark'),
+    box([0, PLINTH + bodyH / 2, -0.01], [w, bodyH, d - 0.02]),
+    box([0, bodyTop + (WORKTOP - recess) / 2, 0], [w, WORKTOP - recess, d], 'counter'),
+  ]
+  // Gaveta no topo (opcional) e portas por baixo.
+  const drawerH = drawers ? Math.min(0.18, bodyH * 0.25) : 0
+  if (drawers) {
+    parts.push(box([0, bodyTop - drawerH, d / 2 - 0.004], [w - 0.01, 0.006, 0.008], 'dark'))
+    parts.push(box([0, bodyTop - drawerH / 2, d / 2 - 0.006], [Math.min(0.3, w * 0.4), 0.012, 0.012], 'metal'))
+  }
+  for (let i = 1; i < doors; i++) {
+    parts.push(box([-w / 2 + (i * w) / doors, PLINTH + (bodyH - drawerH) / 2, d / 2 - 0.004], [0.006, bodyH - drawerH - 0.01, 0.008], 'dark'))
+  }
+  for (let i = 0; i < doors; i++) {
+    const x = -w / 2 + ((i + 0.5) * w) / doors
+    parts.push(box([x, bodyTop - drawerH - 0.06, d / 2 - 0.006], [Math.min(0.14, w / doors / 3), 0.012, 0.012], 'metal'))
+  }
+  return parts
+}
+
+function kitchenSink(w, d, h) {
+  const bowlW = Math.min(0.5, w * 0.62)
+  const bowlD = d * 0.6
+  return [
+    ...kitchenBase(w, d, h, { recess: 0.006 }),
+    box([0, h - 0.004, 0.02], [bowlW + 0.04, 0.004, bowlD + 0.04], 'steel'),
+    box([0, h - 0.002, 0.02], [bowlW, 0.004, bowlD], 'dark'),
+    cyl([0, h - 0.002, -d / 2 + 0.06], [0.05, 0.004, 0.05], 'steel'),
+  ]
+}
+
+function kitchenCooker(w, d, h) {
+  const bodyTop = h - WORKTOP
+  const bodyH = bodyTop - PLINTH
+  const parts = [
+    box([0, PLINTH / 2, -0.03], [w - 0.01, PLINTH, d - 0.06], 'dark'),
+    box([0, PLINTH + bodyH / 2, -0.01], [w, bodyH, d - 0.02]),
+    box([0, bodyTop + (WORKTOP - 0.006) / 2, 0], [w, WORKTOP - 0.006, d], 'counter'),
+    // Porta do forno com vidro e puxador.
+    box([0, PLINTH + bodyH * 0.45, d / 2 - 0.006], [w - 0.08, bodyH * 0.55, 0.01], 'screen'),
+    box([0, PLINTH + bodyH * 0.82, d / 2 - 0.008], [w - 0.12, 0.016, 0.014], 'steel'),
+    // Placa e quatro zonas.
+    box([0, h - 0.004, 0], [w - 0.04, 0.004, d - 0.06], 'screen'),
+  ]
+  for (const [fx, fz] of [[-0.25, -0.22], [0.25, -0.22], [-0.25, 0.2], [0.25, 0.2]]) {
+    parts.push(cyl([fx * w, h - 0.001, fz * d], [Math.min(w, d) * 0.3, 0.002, Math.min(w, d) * 0.3], 'dark'))
+  }
+  return parts
+}
+
+function dishwasher(w, d, h) {
+  return [
+    box([0, PLINTH / 2, -0.03], [w - 0.01, PLINTH, d - 0.06], 'dark'),
+    box([0, PLINTH + (h - PLINTH) / 2, 0], [w, h - PLINTH, d]),
+    box([0, h - 0.06, d / 2 - 0.006], [w - 0.02, 0.05, 0.012], 'dark'),
+    box([0, h - 0.13, d / 2 - 0.008], [w * 0.5, 0.016, 0.016], 'steel'),
+  ]
+}
+
+function fridge(w, d, h) {
+  const split = h * 0.62
+  return [
+    box([0, 0.02, 0], [w - 0.02, 0.04, d - 0.02], 'dark'),
+    box([0, 0.04 + (h - 0.04) / 2, -0.01], [w, h - 0.04, d - 0.02]),
+    // Duas portas (frigorífico em cima, congelador em baixo) e puxadores.
+    box([0, split, d / 2 - 0.01], [w - 0.01, 0.008, 0.02], 'dark'),
+    box([w / 2 - 0.06, split + (h - split) / 2, d / 2 - 0.012], [0.018, Math.min(0.5, (h - split) * 0.6), 0.024], 'steel'),
+    box([w / 2 - 0.06, split * 0.7, d / 2 - 0.012], [0.018, Math.min(0.35, split * 0.4), 0.024], 'steel'),
+  ]
+}
+
+function kitchenWall(w, d, h) {
+  const doors = Math.max(1, Math.round(w / 0.6))
+  // Fundo à vista por baixo (mais escuro) e o corpo.
+  const parts = [box([0, 0.004, 0], [w, 0.008, d], 'dark'), box([0, 0.008 + (h - 0.008) / 2, 0], [w, h - 0.008, d])]
+  for (let i = 1; i < doors; i++) {
+    parts.push(box([-w / 2 + (i * w) / doors, h / 2, d / 2 - 0.004], [0.006, h - 0.01, 0.008], 'dark'))
+  }
+  for (let i = 0; i < doors; i++) {
+    const x = -w / 2 + ((i + 0.5) * w) / doors
+    parts.push(box([x, 0.05, d / 2 - 0.006], [Math.min(0.14, w / doors / 3), 0.012, 0.012], 'metal'))
+  }
+  return parts
+}
+
+function kitchenIsland(w, d, h) {
+  // Bancada com 25 cm de balanço do lado dos bancos (+z) para as pernas.
+  const overhang = Math.min(0.25, d * 0.3)
+  const bodyD = d - overhang
+  return [
+    ...kitchenBase(w, bodyD, h, { drawers: 1 }).filter((p) => p.role !== 'counter').map((p) => ({ ...p, position: [p.position[0], p.position[1], p.position[2] - overhang / 2] })),
+    box([0, h - WORKTOP / 2, 0], [w, WORKTOP, d], 'counter'),
+  ]
+}
+
+function barStool(w, d, h) {
+  const seatT = 0.05
+  return [
+    cyl([0, 0.01, 0], [w * 0.8, 0.02, d * 0.8], 'metal'),
+    cyl([0, (h - seatT) / 2, 0], [0.05, h - seatT - 0.02, 0.05], 'metal'),
+    cyl([0, h * 0.3, 0], [w * 0.6, 0.015, d * 0.6], 'metal'),
+    cyl([0, h - seatT / 2, 0], [w, seatT, d]),
+  ]
+}
+
+/** Televisão: ecrã fino com moldura e pé; a profundidade só conta para o pé. */
+function tv(w, d, h) {
+  const standH = Math.min(0.07, h * 0.1)
+  const panelD = Math.min(0.05, d)
+  const screenH = h - standH
+  return [
+    box([0, 0.006, 0], [Math.min(w * 0.35, 0.4), 0.012, d], 'metal'),
+    box([0, standH / 2, 0], [0.06, standH, Math.min(0.04, panelD)], 'metal'),
+    box([0, standH + screenH / 2, 0], [w, screenH, panelD]),
+    box([0, standH + screenH / 2, panelD / 2 - 0.002], [w - 0.016, screenH - 0.016, 0.004], 'screen'),
+  ]
+}
+
 const MODELS = {
   sofa,
   'sofa-corner': sofaCorner,
@@ -336,6 +468,15 @@ const MODELS = {
   'pendant-lamp': pendantLamp,
   rug,
   plant,
+  'kitchen-base': kitchenBase,
+  'kitchen-sink': kitchenSink,
+  'kitchen-cooker': kitchenCooker,
+  dishwasher,
+  fridge,
+  'kitchen-wall': kitchenWall,
+  'kitchen-island': kitchenIsland,
+  'bar-stool': barStool,
+  tv,
 }
 
 export const MODEL_KEYS = Object.keys(MODELS)

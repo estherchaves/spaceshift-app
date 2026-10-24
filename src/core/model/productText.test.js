@@ -50,6 +50,15 @@ describe('guessCatalogId e guessProductName', () => {
     ['Cama de casal 160x200', 'bed-double'],
     ['Roupeiro PAX', 'wardrobe'],
     ['Cómoda com 6 gavetas', 'dresser'],
+    ['Smart TV Samsung 55" QLED', 'tv'],
+    ['Móvel de TV BESTÅ', 'tv-unit'],
+    ['Frigorífico combinado Bosch', 'fridge'],
+    ['Máquina de lavar loiça encastrável', 'dishwasher'],
+    ['Lava-loiça em inox com 1 cuba', 'kitchen-sink'],
+    ['Fogão a gás com forno', 'kitchen-cooker'],
+    ['Módulo suspenso METOD', 'kitchen-wall'],
+    ['Ilha de cozinha com tampo em carvalho', 'kitchen-island'],
+    ['Banco alto de bar', 'bar-stool'],
     ['Coisa sem nome', null],
   ])('%s → %s', (text, id) => {
     expect(guessCatalogId(text)).toBe(id)

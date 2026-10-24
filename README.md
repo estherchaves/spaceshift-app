@@ -12,8 +12,13 @@ cabe, o que se sobrepõe e por onde já não se consegue andar.
 
 ## O que faz
 
+- **Catálogo com 31 modelos**, incluindo cozinha (módulos baixos e
+  suspensos, lava-loiça, fogão, frigorífico, máquina da loiça, ilha e
+  bancos) e televisão.
 - **Planta 2D à escala** (SVG): arrastar, rodar e redimensionar móveis,
   com encaixe na grelha, cotas e zoom (roda do rato, trackpad ou dois dedos).
+  Uma barra no topo dá as ações do móvel selecionado ou, sem seleção,
+  deixa alterar as medidas da divisão.
 - **Vista 3D sincronizada** (React Three Fiber): a mesma disposição em
   3D, com modelos procedimentais, vistas rápidas da câmara e corte
   automático das paredes. Modo dividido com as duas vistas lado a lado.

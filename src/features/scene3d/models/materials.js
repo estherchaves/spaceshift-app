@@ -27,6 +27,8 @@ const FINISH_SURFACE = {
   ceramic: { roughness: 0.45, metalness: 0 },
   glass: { roughness: 0.08, metalness: 0, transparent: true, opacity: 0.45 },
   marble: { roughness: 0.25, metalness: 0 },
+  stainless: { roughness: 0.35, metalness: 0.3 },
+  graphite: { roughness: 0.5, metalness: 0 },
 }
 
 const DEFAULT_SURFACE = { roughness: 0.75, metalness: 0 }
@@ -54,6 +56,12 @@ export function materialFor(role, { color, finish }, partColor) {
       return { color: '#cbbba6', roughness: 0.6, metalness: 0 }
     case 'leaf':
       return { color: mixHex(color, '#2f5a3a', 0.35), roughness: 0.7, metalness: 0 }
+    case 'counter':
+      return { color: '#e4e0d8', roughness: 0.35, metalness: 0 }
+    case 'steel':
+      return { color: '#b9bcbf', roughness: 0.28, metalness: 0.8 }
+    case 'screen':
+      return { color: '#101114', roughness: 0.12, metalness: 0.2 }
     case 'book':
       return { color: partColor ?? '#888888', roughness: 0.85, metalness: 0 }
     default:

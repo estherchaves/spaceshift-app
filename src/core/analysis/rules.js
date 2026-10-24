@@ -32,8 +32,8 @@ export const ACCESS_WIDTH = 0.6
  */
 export const MIN_ISOLATED_AREA = 1
 
-/** Categorias que não precisam de acesso nem de passagem à volta (candeeiros, plantas). */
-export const DECORATIVE_CATEGORIES = new Set(['lighting', 'decor'])
+/** Categorias que não precisam de acesso nem de passagem à volta (candeeiros, plantas, televisão). */
+export const DECORATIVE_CATEGORIES = new Set(['lighting', 'decor', 'media'])
 
 /** Tamanho da célula da grelha de circulação e número máximo de células. */
 export const GRID_CELL = 0.05

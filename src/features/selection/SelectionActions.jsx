@@ -1,7 +1,11 @@
-import { Copy, Lock, LockOpen, RotateCw, Trash2, X } from 'lucide-react'
-import { IconButton } from '@/components/ui'
+import { Copy, Lock, LockOpen, RotateCw, Ruler, Trash2, X } from 'lucide-react'
+import { useState } from 'react'
+import { Button, IconButton } from '@/components/ui'
+import { formatLength } from '@/core/units/units.js'
+import { RoomSizeDialog } from '@/features/inspector/RoomSizeDialog.jsx'
 import { clearSelection, deleteSelected, duplicateSelected, rotateSelected, toggleLockSelected } from '@/store/commands.js'
-import { useSelectedItem, useSelectedOpening } from '@/store/selectors.js'
+import { useProjectStore } from '@/store/projectStore.js'
+import { selectRoom, useSelectedItem, useSelectedOpening } from '@/store/selectors.js'
 import './SelectionActions.css'
 
 const LOCKED_REASON = 'Desbloqueie o móvel para o alterar'
@@ -10,11 +14,13 @@ const LOCKED_REASON = 'Desbloqueie o móvel para o alterar'
  * Barra flutuante sobre a vista com as ações do que está selecionado.
  * No telemóvel o painel Propriedades fica noutro separador e não há tecla
  * Delete, por isso é aqui que se roda, duplica e elimina sem sair da vista.
+ * Sem nada selecionado, mostra as medidas da divisão e deixa mudá-las.
  */
 export function SelectionActions({ hidden = false }) {
   const item = useSelectedItem()
   const opening = useSelectedOpening()
-  if (hidden || (!item && !opening)) return null
+  if (hidden) return null
+  if (!item && !opening) return <RoomActions />
 
   if (opening) {
     const label = opening.type === 'window' ? 'janela' : 'porta'
@@ -53,5 +59,23 @@ export function SelectionActions({ hidden = false }) {
       />
       <IconButton icon={X} label="Fechar" shortcut="Esc" size="sm" tooltipAlign="end" onClick={clearSelection} />
     </div>
+  )
+}
+
+function RoomActions() {
+  const room = useProjectStore(selectRoom)
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <div className="selection-actions selection-actions--room" role="toolbar" aria-label="Divisão">
+        <span className="selection-actions__name">
+          Divisão <span className="selection-actions__size">{formatLength(room.width)} × {formatLength(room.depth)}</span>
+        </span>
+        <Button size="sm" variant="ghost" icon={Ruler} onClick={() => setOpen(true)}>
+          Alterar medidas
+        </Button>
+      </div>
+      <RoomSizeDialog open={open} onClose={() => setOpen(false)} />
+    </>
   )
 }

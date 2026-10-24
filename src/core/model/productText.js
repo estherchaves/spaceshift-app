@@ -117,6 +117,16 @@ function guessUnit(numbers) {
  * geral. Devolve o id do modelo do catálogo, ou null.
  */
 const KEYWORDS = [
+  ['tv-unit', /movel de tv|movel tv|tv bench|tv unit|tv stand/],
+  ['tv', /televis|smart tv|\btv\b|\boled\b|\bqled\b|\bled tv\b/],
+  ['fridge', /frigorifico|combinado|geladeira|fridge|refrigerator/],
+  ['dishwasher', /maquina de lavar loica|maquina da loica|maquina de loica|dishwasher/],
+  ['kitchen-sink', /lava-loica|lava loica|\bpia\b|kitchen sink|\bsink\b/],
+  ['kitchen-cooker', /fogao|placa de inducao|forno|cooker|\boven\b|\bstove\b/],
+  ['kitchen-wall', /armario suspenso|modulo suspenso|movel suspenso|wall cabinet/],
+  ['kitchen-island', /ilha de cozinha|\bilha\b|kitchen island/],
+  ['kitchen-base', /modulo de cozinha|modulo baixo|movel de cozinha|armario de cozinha|base cabinet|kitchen cabinet/],
+  ['bar-stool', /banco alto|banco de bar|bar stool|counter stool/],
   ['nightstand', /mesa de cabeceira|cabeceira|nightstand|bedside/],
   ['coffee-table', /mesa de centro|mesa de apoio|coffee table|side table/],
   ['office-chair', /cadeira de escritorio|cadeira giratoria|office chair|desk chair/],
@@ -133,7 +143,7 @@ const KEYWORDS = [
   ['dining-chair', /cadeira|banco|chair|stool/],
   ['wardrobe', /roupeiro|guarda-roupa|guarda roupa|armario|wardrobe/],
   ['bookshelf', /estante|prateleira|bookcase|bookshelf|shelving/],
-  ['tv-unit', /movel de tv|movel tv|aparador|tv bench|tv unit|sideboard/],
+  ['tv-unit', /aparador|sideboard/],
   ['dresser', /comoda|dresser|chest of drawers/],
   ['floor-lamp', /candeeiro de pe|floor lamp/],
   ['pendant-lamp', /candeeiro suspenso|candeeiro de teto|pendant/],

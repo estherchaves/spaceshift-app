@@ -13,4 +13,6 @@ export const FINISHES = {
   ceramic: { label: 'Cerâmica', color: '#d9d2c5' },
   glass: { label: 'Vidro', color: '#cfdcdc' },
   marble: { label: 'Mármore', color: '#e7e4df' },
+  stainless: { label: 'Inox', color: '#c3c6c8' },
+  graphite: { label: 'Grafite', color: '#4a4c50' },
 }
