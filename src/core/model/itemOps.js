@@ -82,6 +82,7 @@ export function sanitizeItemPatch(item, patch, room, bounds = DEFAULT_SIZE_BOUND
     }
     next.dimensions = dimensions
   }
+  if (isNumber(patch.elevation)) next.elevation = roundToMm(clamp(patch.elevation, LIMITS.elevation.min, LIMITS.elevation.max))
   if (typeof patch.color === 'string' && /^#[0-9a-f]{6}$/i.test(patch.color)) next.color = patch.color.toLowerCase()
   if (patch.finish === null || typeof patch.finish === 'string') next.finish = patch.finish
   if (typeof patch.locked === 'boolean') next.locked = patch.locked
@@ -116,6 +117,7 @@ function isSameItem(a, b) {
     a.dimensions.width === b.dimensions.width &&
     a.dimensions.depth === b.dimensions.depth &&
     a.dimensions.height === b.dimensions.height &&
+    a.elevation === b.elevation &&
     a.color === b.color &&
     a.finish === b.finish &&
     a.locked === b.locked &&

@@ -3,10 +3,9 @@
 Estúdio de design de interiores no browser: desenhe uma divisão, coloque
 móveis à escala, detete colisões e veja o resultado em 2D e 3D.
 
-> Estado: **Fase 3** concluída. Editor 2D com zoom, deslocação, adicionar
-> móveis (arrastar ou +), mover, rodar, redimensionar, duplicar, eliminar,
-> snap à grelha, valores exatos e atalhos de teclado. A seguir: Fase 4
-> (símbolos de planta, acabamentos e bloqueio).
+> Estado: **Fase 4** concluída. Editor 2D completo com símbolos de planta
+> para cada tipo de móvel, catálogo com pré-visualizações, acabamentos, cor
+> e bloqueio. A seguir: Fase 5 (vista 3D sincronizada com a planta).
 
 ## Requisitos
 

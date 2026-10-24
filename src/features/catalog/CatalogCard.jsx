@@ -4,7 +4,7 @@ import { FURNITURE_CATEGORIES } from '@/core/model'
 import { addCatalogItem } from '@/store/commands.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { CATALOG_DRAG_TYPE } from '@/features/editor2d/PlanView.jsx'
-import { CATEGORY_ICONS } from './categoryIcons.js'
+import { CatalogPreview } from './CatalogPreview.jsx'
 
 const price = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
 const cm = (m) => Math.round(m * 100)
@@ -15,7 +15,6 @@ const cm = (m) => Math.round(m * 100)
  * perto do centro). Em ambos os casos o móvel fica selecionado.
  */
 export function CatalogCard({ entry }) {
-  const Icon = CATEGORY_ICONS[entry.category]
   const setCatalogDrag = useEditorStore((state) => state.setCatalogDrag)
   const { width, depth, height } = entry.dimensions
 
@@ -32,8 +31,8 @@ export function CatalogCard({ entry }) {
       }}
       onDragEnd={() => setCatalogDrag(null)}
     >
-      <span className="catalog-card__preview" style={{ '--item-color': entry.color }} aria-hidden="true">
-        <Icon size={20} strokeWidth={1.5} />
+      <span className="catalog-card__preview" aria-hidden="true">
+        <CatalogPreview entry={entry} />
       </span>
       <span className="catalog-card__body">
         <span className="catalog-card__name">{entry.name}</span>

@@ -1,28 +1,29 @@
 import { memo } from 'react'
 import { worldToScreen } from '@/core/coordinates/viewport.js'
 import { formatCentimetres } from '@/core/units/units.js'
-import { readableAngle } from './planGeometry.js'
-
-const CHAR_WIDTH = 6.2 // largura média (px) de um carácter a 10,5 px
+import { getCatalogEntry } from '@/data/catalog/furniture.js'
+import { PlanSymbol } from './symbols/PlanSymbol.jsx'
 
 /**
- * Um móvel na planta. É desenhado no seu referencial local (centro na
- * origem) e depois transladado e rodado, por isso o retângulo nunca é
- * deformado pela rotação. Nesta fase é um retângulo com o nome; os
- * símbolos de planta de cada tipo chegam na Fase 4.
+ * Um móvel na planta: símbolo de planta do seu tipo, desenhado no
+ * referencial local (centro na origem) e depois transladado e rodado,
+ * para que a rotação nunca deforme o desenho.
+ * `plan-item__body` (por baixo) é a pegada real e recebe os cliques;
+ * `plan-item__outline` (por cima) mostra conflito e foco do teclado.
  */
 export const PlanItem = memo(function PlanItem({ item, viewport, selected, conflict, onSelect }) {
   const c = worldToScreen(viewport, item.position)
   const w = item.dimensions.width * viewport.scale
   const h = item.dimensions.depth * viewport.scale
-  const showLabel = w > Math.min(item.name.length * CHAR_WIDTH + 12, 140) && h > 20
-  const label = w > item.name.length * CHAR_WIDTH + 12 ? item.name : null
+  const kind = getCatalogEntry(item.catalogId)?.plan2d ?? 'box'
   const size = `${formatCentimetres(item.dimensions.width)} × ${formatCentimetres(item.dimensions.depth)}`
+  const badge = Math.min(14, Math.max(9, Math.min(w, h) * 0.4))
 
   return (
     <g
       className="plan-item"
       data-item-id={item.id}
+      data-kind={kind}
       data-selected={selected || undefined}
       data-conflict={conflict || undefined}
       data-locked={item.locked || undefined}
@@ -30,7 +31,7 @@ export const PlanItem = memo(function PlanItem({ item, viewport, selected, confl
       tabIndex={0}
       role="button"
       aria-pressed={selected}
-      aria-label={`${item.name}, ${size}${conflict ? ', em conflito' : ''}`}
+      aria-label={`${item.name}, ${size}${item.locked ? ', bloqueado' : ''}${conflict ? ', em conflito' : ''}`}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
@@ -39,13 +40,20 @@ export const PlanItem = memo(function PlanItem({ item, viewport, selected, confl
       }}
       onFocus={() => onSelect(item.id)}
     >
-      <rect className="plan-item__body" x={-w / 2} y={-h / 2} width={w} height={h} rx={Math.min(3, w / 8)} style={{ '--item-color': item.color }} />
-      {/* Linha "frontal": indica para onde o móvel está virado (lado +Z local). */}
-      <line className="plan-item__front" x1={-w / 2 + 3} x2={w / 2 - 3} y1={h / 2 - 3} y2={h / 2 - 3} />
-      {showLabel && label && (
-        <text className="plan-item__label" textAnchor="middle" dominantBaseline="central" transform={`rotate(${readableAngle(item.rotation)})`}>
-          {label}
-        </text>
+      <rect className="plan-item__body" x={-w / 2} y={-h / 2} width={w} height={h} />
+      <PlanSymbol kind={kind} w={w} h={h} widthM={item.dimensions.width} color={item.color} />
+      <rect className="plan-item__outline" x={-w / 2} y={-h / 2} width={w} height={h} />
+      {item.locked && (
+        // O cadeado fica sempre direito, seja qual for a rotação do móvel.
+        <g className="plan-item__lock" transform={`rotate(${-item.rotation})`} data-testid="lock-badge">
+          <circle r={badge / 2 + 3} />
+          <g transform={`translate(${-badge / 2} ${-badge / 2})`}>
+            <svg width={badge} height={badge} viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            </svg>
+          </g>
+        </g>
       )}
     </g>
   )

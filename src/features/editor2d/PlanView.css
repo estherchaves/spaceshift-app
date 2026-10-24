@@ -82,38 +82,48 @@
 }
 
 .plan-item__body {
-  fill: color-mix(in srgb, var(--item-color) 55%, #ffffff);
-  stroke: color-mix(in srgb, var(--item-color) 45%, var(--color-graphite));
-  stroke-width: 1;
+  fill: transparent;
+  stroke: none;
   transition: fill var(--duration-fast) var(--ease-out);
 }
 
 .plan-item:hover .plan-item__body {
-  fill: color-mix(in srgb, var(--item-color) 68%, #ffffff);
+  fill: rgb(162 124 79 / 0.08);
 }
 
-.plan-item__front {
-  stroke: color-mix(in srgb, var(--item-color) 30%, var(--color-graphite));
-  stroke-width: 1;
-  opacity: 0.45;
-}
-
-.plan-item__label {
-  fill: var(--color-graphite);
-  font-size: 10.5px;
-  font-weight: var(--weight-medium);
+.plan-item__outline {
+  fill: none;
+  stroke: none;
   pointer-events: none;
 }
 
-.plan-item[data-conflict] .plan-item__body {
+/* Conflito: contorno vermelho por cima do símbolo e leve tom de alerta. */
+.plan-item[data-conflict] .plan-item__outline {
+  fill: rgb(184 66 58 / 0.16);
   stroke: var(--color-danger);
   stroke-width: 2;
-  fill: color-mix(in srgb, var(--color-danger) 14%, color-mix(in srgb, var(--item-color) 50%, #ffffff));
 }
 
-.plan-item:focus-visible .plan-item__body {
+.plan-item:focus-visible .plan-item__outline {
   stroke: var(--color-focus);
   stroke-width: 2;
+}
+
+.plan-item__lock {
+  pointer-events: none;
+}
+
+.plan-item__lock circle {
+  fill: var(--color-graphite);
+  opacity: 0.88;
+}
+
+.plan-item__lock svg {
+  fill: none;
+  stroke: var(--color-on-graphite);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* Seleção */

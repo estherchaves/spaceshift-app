@@ -1,0 +1,95 @@
+/*
+ * Cores dos símbolos a partir da cor do móvel (--item-color), misturada com
+ * branco ou grafite para dar volume sem sair da paleta neutra.
+ */
+.plan-symbol {
+  --sym-line: color-mix(in srgb, var(--item-color) 35%, var(--color-graphite));
+  pointer-events: none;
+}
+
+.plan-symbol .sym-fill {
+  fill: color-mix(in srgb, var(--item-color) 62%, #ffffff);
+  stroke: var(--sym-line);
+  stroke-width: 1;
+}
+
+.plan-symbol .sym-soft {
+  fill: color-mix(in srgb, var(--item-color) 40%, #ffffff);
+  stroke: var(--sym-line);
+  stroke-width: 0.75;
+}
+
+.plan-symbol .sym-light {
+  fill: color-mix(in srgb, var(--item-color) 14%, #ffffff);
+  stroke: var(--sym-line);
+  stroke-width: 0.75;
+}
+
+.plan-symbol .sym-strong {
+  fill: color-mix(in srgb, var(--item-color) 55%, var(--color-graphite));
+}
+
+.plan-symbol .sym-outline {
+  fill: none;
+  stroke: var(--sym-line);
+  stroke-width: 0.6;
+  opacity: 0.6;
+}
+
+.plan-symbol .sym-detail {
+  stroke: var(--sym-line);
+  stroke-width: 0.75;
+}
+
+.plan-symbol .sym-strong-line {
+  stroke: color-mix(in srgb, var(--item-color) 50%, var(--color-graphite));
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.plan-symbol .sym-faint {
+  stroke: var(--sym-line);
+  stroke-width: 0.6;
+  opacity: 0.5;
+}
+
+.plan-symbol .sym-dashed {
+  stroke: var(--sym-line);
+  stroke-width: 0.75;
+  stroke-dasharray: 3 2;
+}
+
+.plan-symbol .sym-dashed-box {
+  fill: none;
+  stroke: var(--sym-line);
+  stroke-width: 0.6;
+  stroke-dasharray: 3 2;
+  opacity: 0.6;
+}
+
+.plan-symbol .sym-ghost {
+  fill: color-mix(in srgb, var(--item-color) 10%, transparent);
+  stroke: var(--sym-line);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.plan-symbol .sym-rug {
+  fill: color-mix(in srgb, var(--item-color) 45%, #ffffff);
+  fill-opacity: 0.8;
+  stroke: var(--sym-line);
+  stroke-width: 0.6;
+}
+
+.plan-symbol .sym-pot {
+  fill: color-mix(in srgb, #c9b8a3 70%, #ffffff);
+  stroke: #8d7c68;
+  stroke-width: 0.75;
+}
+
+.plan-symbol .sym-leaf {
+  fill: color-mix(in srgb, var(--item-color) 75%, #ffffff);
+  fill-opacity: 0.85;
+  stroke: color-mix(in srgb, var(--item-color) 60%, var(--color-graphite));
+  stroke-width: 0.6;
+}

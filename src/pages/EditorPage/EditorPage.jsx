@@ -11,6 +11,7 @@ import {
   duplicateSelected,
   nudgeSelected,
   rotateSelected,
+  toggleLockSelected,
 } from '@/store/commands.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { EditorStatusBar } from './EditorStatusBar.jsx'
@@ -29,6 +30,7 @@ const SHORTCUTS = [
   { key: 'd', ctrl: true, handler: () => duplicateSelected() },
   { key: 'r', shift: false, handler: () => rotateSelected(1) },
   { key: 'r', shift: true, handler: () => rotateSelected(-1) },
+  { key: 'l', handler: () => toggleLockSelected() },
   { key: 'ArrowLeft', handler: (e) => nudgeSelected(-1, 0, e.shiftKey) },
   { key: 'ArrowRight', handler: (e) => nudgeSelected(1, 0, e.shiftKey) },
   { key: 'ArrowUp', handler: (e) => nudgeSelected(0, -1, e.shiftKey) },

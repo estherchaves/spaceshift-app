@@ -165,11 +165,11 @@ spaceshift/
     │   ├── editor2d/           # ✓ Fases 2–3: PlanView, PlanItem, SelectionOverlay,
     │   │                       #   DropGhost, ZoomControls, useViewport,
     │   │                       #   usePlanPointer (gestos), planGeometry
-    │   │                       # Fase 4: symbols/ (desenhos de planta por tipo)
-    │   ├── catalog/            # ✓ CatalogPanel, CatalogCard (arrastar e +), filterCatalog
-    │   │                       # Fase 4: pré-visualização 2D no cartão
-    │   ├── inspector/          # ✓ PropertiesPanel, RoomInspector, ItemInspector
-    │   │                       # Fase 4: cor, acabamento e bloqueio do móvel
+    │   │                       #   symbols/PlanSymbol (16 desenhos de planta) ✓ Fase 4
+    │   ├── catalog/            # ✓ CatalogPanel, CatalogCard (arrastar e +),
+    │   │                       #   CatalogPreview (mesmo símbolo da planta), filterCatalog
+    │   ├── inspector/          # ✓ PropertiesPanel, RoomInspector, ItemInspector,
+    │   │                       #   FinishPicker (acabamento, cor, bloqueio, altura ao chão)
     │   ├── scene3d/            # Fase 5: Scene3D, Room3D, Furniture3D,
     │   │                       # models/ (geometria procedimental), Lights
     │   ├── analysis/           # Fase 6: painel de problemas e marcadores
@@ -274,3 +274,24 @@ Os testes ficam ao lado do código que testam (`*.test.js`).
   grelha, Shift ×10), R / Shift+R, Delete, Ctrl/⌘+D, Escape, + / − / 0, G.
 - **Desempenho:** com 60 móveis, cada evento de arrasto foi processado em
   cerca de 17 ms no Chromium headless, incluindo o tempo do Playwright.
+
+## 11. Catálogo e símbolos (Fase 4)
+
+- **Símbolos de planta:** 16 desenhos (sofá, sofá de canto, cama, mesa,
+  mesa redonda, secretária, móvel com portas, roupeiro, estante, cadeira,
+  poltrona, cadeira de escritório, candeeiro de pé, candeeiro suspenso,
+  tapete e planta). Cada símbolo é desenhado no referencial local do móvel
+  (trás = −Z, frente = +Z), por isso roda e redimensiona sem se deformar.
+  Detalhes que dependem da medida real (almofadas, portas, módulos) usam o
+  comprimento em metros. Objetos suspensos são tracejados, como numa planta.
+- **Pré-visualização no catálogo:** o mesmo componente, com proporções
+  reais e escala limitada para objetos pequenos não parecerem enormes.
+- **Acabamentos:** cada modelo lista os acabamentos que admite; escolher um
+  aplica a cor sugerida. Também é possível escolher qualquer cor.
+- **Bloquear (L):** impede mover, rodar, redimensionar, mudar acabamento e
+  eliminar, seja com o rato, o teclado ou o painel. Duplicar continua
+  possível e a cópia fica desbloqueada.
+- **Limitação conhecida:** as colisões usam o retângulo envolvente de cada
+  móvel. Para a mesa redonda e o sofá de canto isto é conservador (pode
+  assinalar um conflito num canto vazio). Uma forma exata por tipo pode ser
+  adicionada na Fase 6 sem mudar o modelo de dados.

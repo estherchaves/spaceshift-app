@@ -63,6 +63,13 @@ export function nudgeSelected(dx, dz, large = false) {
   project().updateItem(item.id, { position: { x: item.position.x + dx * step, z: item.position.z + dz * step } })
 }
 
+/** Bloqueia ou desbloqueia o selecionado. Um móvel bloqueado não se move, não roda nem é eliminado. */
+export function toggleLockSelected() {
+  const item = selectedItem()
+  if (!item) return
+  project().updateItem(item.id, { locked: !item.locked })
+}
+
 export function clearSelection() {
   editor().selectItem(null)
 }
