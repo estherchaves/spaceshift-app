@@ -113,3 +113,32 @@
   content: '·';
   margin-right: var(--space-2);
 }
+
+.catalog-card {
+  cursor: grab;
+}
+
+.catalog-card:active {
+  cursor: grabbing;
+}
+
+.catalog-card__body {
+  flex: 1;
+}
+
+.catalog-card__add {
+  flex: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.catalog-card:hover .catalog-card__add,
+.catalog-card:focus-within .catalog-card__add {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .catalog-card__add {
+    opacity: 1;
+  }
+}

@@ -1,7 +1,8 @@
 import { CircleAlert, CircleCheck } from 'lucide-react'
 import { useMemo } from 'react'
 import { formatArea, formatLength } from '@/core/units/units.js'
-import { computeLayoutMetrics, selectActiveItems, selectRoom, selectSettings } from '@/store/selectors.js'
+import { useEditorStore } from '@/store/editorStore.js'
+import { computeLayoutMetrics, selectRoom, selectSettings, useDisplayedItems, useSelectedItem } from '@/store/selectors.js'
 import { useProjectStore } from '@/store/projectStore.js'
 import './EditorStatusBar.css'
 
@@ -9,7 +10,9 @@ const percent = new Intl.NumberFormat('pt-PT', { style: 'percent', maximumFracti
 
 export function EditorStatusBar() {
   const room = useProjectStore(selectRoom)
-  const items = useProjectStore(selectActiveItems)
+  const items = useDisplayedItems()
+  const selected = useSelectedItem()
+  const interaction = useEditorStore((state) => state.interaction)
   const settings = useProjectStore(selectSettings)
   const metrics = useMemo(() => computeLayoutMetrics(room, items), [room, items])
   const ratio = metrics.roomArea > 0 ? metrics.occupiedArea / metrics.roomArea : 0
@@ -37,12 +40,28 @@ export function EditorStatusBar() {
             ? 'Sem conflitos'
             : `${metrics.conflicts} ${metrics.conflicts === 1 ? 'conflito' : 'conflitos'}`}
         </span>
+        <span className="statusbar__optional statusbar__state" role="status">
+          {editorState(interaction, selected)}
+        </span>
         <span className="statusbar__optional statusbar__muted">
           Grelha {Math.round(settings.gridSize * 100)} cm · Snap {settings.snapToGrid ? 'ativo' : 'desligado'}
         </span>
       </div>
     </footer>
   )
+}
+
+const INTERACTION_LABELS = {
+  move: 'A mover',
+  rotate: 'A rodar',
+  resize: 'A redimensionar',
+  pan: 'A deslocar a vista',
+}
+
+function editorState(interaction, selected) {
+  if (interaction) return INTERACTION_LABELS[interaction.type] ?? 'A editar'
+  if (selected) return `${selected.name}${selected.locked ? ' (bloqueado)' : ''} · ${Math.round(selected.rotation)}°`
+  return 'Pronto'
 }
 
 function Metric({ label, value, className = '' }) {

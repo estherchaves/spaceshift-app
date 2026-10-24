@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createFurnitureItem, validateProject } from '@/core/model'
-import { getCatalogEntry } from '@/features/catalog/data/furniture.js'
+import { getCatalogEntry } from '@/data/catalog/furniture.js'
 import { resetEditorStore, useEditorStore } from './editorStore.js'
 import { resetProjectStore, useProjectStore } from './projectStore.js'
 import { computeLayoutMetrics } from './selectors.js'

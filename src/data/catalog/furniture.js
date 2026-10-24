@@ -292,3 +292,13 @@ export const FURNITURE_CATALOG = [
 export function getCatalogEntry(id) {
   return FURNITURE_CATALOG.find((entry) => entry.id === id) ?? null
 }
+
+/**
+ * Limites de medidas de um móvel. Móveis de medidas fixas têm min = max.
+ * Se o móvel já não existir no catálogo, usa os limites gerais.
+ */
+export function getSizeBounds(catalogId, fallback) {
+  const entry = getCatalogEntry(catalogId)
+  if (!entry) return fallback
+  return entry.resizable ?? { min: entry.dimensions, max: entry.dimensions }
+}

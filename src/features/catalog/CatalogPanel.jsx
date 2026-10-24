@@ -5,7 +5,7 @@ import { Button, EmptyState, SearchField } from '@/components/ui'
 import { FURNITURE_CATEGORIES } from '@/core/model'
 import { CatalogCard } from './CatalogCard.jsx'
 import { CATEGORY_ICONS } from './categoryIcons.js'
-import { FURNITURE_CATALOG } from './data/furniture.js'
+import { FURNITURE_CATALOG } from '@/data/catalog/furniture.js'
 import { filterCatalog } from './filterCatalog.js'
 import './CatalogPanel.css'
 

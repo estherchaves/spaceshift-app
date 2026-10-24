@@ -162,13 +162,14 @@ spaceshift/
     │   │                       # EmptyState, PanelSection/FieldGrid (Dialog na Fase 7)
     │   └── layout/             # AppShell (grelha responsiva), SidePanel
     ├── features/               # módulos com UI + lógica de uma área do produto
-    │   ├── editor2d/           # ✓ Fase 2: PlanView (SVG à escala), planGeometry
-    │   │                       # Fase 3: zoom/pan, arrastar, seleção, symbols/
-    │   ├── catalog/            # ✓ Fase 2: CatalogPanel, CatalogCard, filterCatalog,
-    │   │                       #   data/furniture.js (22 móveis), data/finishes.js
-    │   │                       # Fase 4: pré-visualização 2D e adicionar à planta
-    │   ├── inspector/          # ✓ Fase 2: PropertiesPanel, RoomInspector
-    │   │                       # Fase 4: propriedades do móvel selecionado
+    │   ├── editor2d/           # ✓ Fases 2–3: PlanView, PlanItem, SelectionOverlay,
+    │   │                       #   DropGhost, ZoomControls, useViewport,
+    │   │                       #   usePlanPointer (gestos), planGeometry
+    │   │                       # Fase 4: symbols/ (desenhos de planta por tipo)
+    │   ├── catalog/            # ✓ CatalogPanel, CatalogCard (arrastar e +), filterCatalog
+    │   │                       # Fase 4: pré-visualização 2D no cartão
+    │   ├── inspector/          # ✓ PropertiesPanel, RoomInspector, ItemInspector
+    │   │                       # Fase 4: cor, acabamento e bloqueio do móvel
     │   ├── scene3d/            # Fase 5: Scene3D, Room3D, Furniture3D,
     │   │                       # models/ (geometria procedimental), Lights
     │   ├── analysis/           # Fase 6: painel de problemas e marcadores
@@ -185,20 +186,23 @@ spaceshift/
     │   ├── model/              # tipos, constantes, fábricas, métricas,
     │   │                       # validação, migrações, (de)serialização ✓ Fase 1
     │   │                       # sanitize.js (alterações seguras)      ✓ Fase 2
+    │   │                       # itemOps.js (operações sobre móveis)   ✓ Fase 3
+    │   ├── editing/            # ✓ Fase 3: mover/rodar/redimensionar (snap pela
+    │   │                       #   aresta, pegas com aresta oposta fixa), espaço livre
     │   ├── analysis/           # Fase 6: analyzeLayout() → erros e avisos
     │   └── history/            # Fase 7: pilha undo/redo com transações
-    ├── store/                  # ✓ Fase 2: Zustand
-    │   ├── projectStore.js     # documento + ações (renomear, divisão, definições;
-    │   │                       #   addItem, moveItem… na Fase 3)
-    │   ├── editorStore.js      # estado efémero: vista 2D/3D, painel móvel, seleção
-    │   └── selectors.js        # seletores + computeLayoutMetrics
+    ├── data/catalog/           # ✓ dados puros: furniture.js (22 móveis), finishes.js
+    ├── store/                  # ✓ Zustand
+    │   ├── projectStore.js     # documento + ações (divisão, definições, móveis)
+    │   ├── editorStore.js      # estado efémero: vista, seleção, gesto em curso
+    │   ├── commands.js         # ações do editor partilhadas por botões/atalhos/planta
+    │   └── selectors.js        # seletores, useDisplayedItems, computeLayoutMetrics
     ├── services/               # Fase 7: fronteira com o exterior
     │   ├── persistence/
     │   │   ├── ProjectRepository.js     # contrato (list, get, save, remove)
     │   │   └── localStorageRepository.js
     │   └── export/             # renderização PNG, download de ficheiros
-    ├── hooks/                  # useElementSize ✓; useKeyboardShortcuts,
-    │                           # usePointerDrag (Fases 3 e 7)
+    ├── hooks/                  # ✓ useElementSize, useKeyboardShortcuts
     ├── utils/                  # utilitários sem domínio (download, debounce)
     ├── styles/
     │   ├── tokens.css          # cores, tipografia, espaçamentos      ✓ Fase 1
@@ -248,3 +252,25 @@ Os testes ficam ao lado do código que testam (`*.test.js`).
   (móveis fora da divisão e sobreposições SAT). Revestimentos de chão com
   altura ≤ 3 cm (tapetes) e objetos elevados não contam como sobreposição.
   A análise completa com circulação chega na Fase 6.
+
+## 10. Editor 2D (Fase 3)
+
+- **Gestos:** clicar seleciona; arrastar move (Alt desliga o snap); a pega
+  circular roda (Shift = rotação livre ao grau); as pegas quadradas
+  redimensionam mantendo fixa a aresta oposta, só nos eixos que o modelo
+  permite. Arrastar o fundo, o botão do meio ou Espaço + arrastar desloca a
+  vista; a roda do rato ou a pinça no trackpad fazem zoom no cursor.
+- **Uma alteração por gesto:** durante o arrasto só muda `editorStore.interaction.preview`.
+  O documento é atualizado uma vez, ao largar, por isso o Undo/Redo da
+  Fase 7 guarda um passo por gesto e não um por movimento do rato.
+  `useDisplayedItems()` junta a pré-visualização aos móveis, para a planta,
+  a barra inferior e (na Fase 5) a cena 3D mostrarem o mesmo estado.
+- **Snap pela aresta:** o snap alinha a caixa envolvente do móvel à grelha,
+  não o centro, para os móveis encostarem às linhas e às paredes.
+- **Adicionar:** arrastar o cartão para a planta coloca o móvel no ponto
+  largado; o botão + procura o espaço livre mais próximo do centro, dentro
+  da divisão e sem sobreposições.
+- **Atalhos** (ignorados enquanto se escreve num campo): setas (passo da
+  grelha, Shift ×10), R / Shift+R, Delete, Ctrl/⌘+D, Escape, + / − / 0, G.
+- **Desempenho:** com 60 móveis, cada evento de arrasto foi processado em
+  cerca de 17 ms no Chromium headless, incluindo o tempo do Playwright.

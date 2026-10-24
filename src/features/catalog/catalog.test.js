@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { FURNITURE_CATEGORIES, LIMITS } from '@/core/model'
-import { FURNITURE_CATALOG, getCatalogEntry } from './data/furniture.js'
-import { FINISHES } from './data/finishes.js'
+import { FURNITURE_CATALOG, getCatalogEntry } from '@/data/catalog/furniture.js'
+import { FINISHES } from '@/data/catalog/finishes.js'
 import { filterCatalog, normalizeSearch } from './filterCatalog.js'
 
 describe('dados do catálogo', () => {

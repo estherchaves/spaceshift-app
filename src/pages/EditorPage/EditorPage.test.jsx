@@ -2,7 +2,7 @@ import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createFurnitureItem, getActiveLayout } from '@/core/model'
-import { getCatalogEntry } from '@/features/catalog/data/furniture.js'
+import { getCatalogEntry } from '@/data/catalog/furniture.js'
 import { resetEditorStore, useEditorStore } from '@/store/editorStore.js'
 import { resetProjectStore, useProjectStore } from '@/store/projectStore.js'
 import { EditorPage } from './EditorPage.jsx'
@@ -21,7 +21,7 @@ describe('EditorPage: estrutura', () => {
     expect(screen.getByRole('complementary', { name: 'Catálogo de móveis' })).toBeInTheDocument()
     expect(screen.getByRole('main')).toBeInTheDocument()
     expect(screen.getByRole('complementary', { name: 'Propriedades' })).toBeInTheDocument()
-    expect(screen.getByRole('img', { name: /Planta da divisão: Sala de estar, 5,00 m por 4,00 m/ })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: /Planta da divisão: Sala de estar, 5,00 m por 4,00 m/ })).toBeInTheDocument()
     expect(statusBar().getByText('5,00 m × 4,00 m')).toBeInTheDocument()
     expect(statusBar().getByText('20,00 m²')).toBeInTheDocument()
     expect(statusBar().getByText('Sem conflitos')).toBeInTheDocument()
@@ -151,7 +151,7 @@ describe('EditorPage: sincronização com o modelo', () => {
         return { project }
       })
     })
-    expect(document.querySelectorAll('.plan-items polygon')).toHaveLength(2)
+    expect(document.querySelectorAll('.plan-item')).toHaveLength(2)
     expect(statusBar().getByText('1 conflito')).toBeInTheDocument()
   })
 })

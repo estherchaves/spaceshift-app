@@ -45,3 +45,18 @@ export function scaleBarLength(scale) {
 export function toScreen(viewport, x, z) {
   return worldToScreen(viewport, { x, z })
 }
+
+/** Ângulo extra (0 ou 180°) para o texto de um móvel rodado não ficar invertido. */
+export function readableAngle(degrees) {
+  const a = ((degrees % 360) + 360) % 360
+  return a > 90 && a <= 270 ? 180 : 0
+}
+
+const CURSORS = ['ns-resize', 'nesw-resize', 'ew-resize', 'nwse-resize']
+const HANDLE_ANGLE = { n: 0, ne: 45, e: 90, se: 135, s: 180, sw: 225, w: 270, nw: 315 }
+
+/** Cursor de redimensionamento coerente com a rotação do móvel. */
+export function resizeCursor(handleId, rotation) {
+  const angle = (((HANDLE_ANGLE[handleId] + rotation) % 180) + 180) % 180
+  return CURSORS[Math.round(angle / 45) % 4]
+}

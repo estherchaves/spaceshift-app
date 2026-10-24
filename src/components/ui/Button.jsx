@@ -51,7 +51,7 @@ export function Button({
 }
 
 /** Botão só com ícone: o rótulo é obrigatório e aparece como tooltip. */
-export function IconButton({ icon, label, shortcut, disabled, disabledReason, tooltipPlacement, tooltipAlign, ...rest }) {
+export function IconButton({ icon, label, shortcut, disabled, disabledReason, tooltipPlacement, tooltipAlign, className = '', ...rest }) {
   const tip = disabled && disabledReason ? `${label} · ${disabledReason}` : shortcut ? `${label} (${shortcut})` : label
   return (
     <Tooltip content={tip} placement={tooltipPlacement} align={tooltipAlign}>
@@ -62,7 +62,7 @@ export function IconButton({ icon, label, shortcut, disabled, disabledReason, to
         disabled={disabled}
         disabledReason={disabledReason}
         showReasonTooltip={false}
-        className="btn--icon-only"
+        className={`btn--icon-only ${className}`.trim()}
         {...rest}
       />
     </Tooltip>

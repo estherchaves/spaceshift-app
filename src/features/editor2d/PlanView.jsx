@@ -1,73 +1,157 @@
-import { useMemo } from 'react'
-import { ROOM_TYPES } from '@/core/model'
-import { getFootprint } from '@/core/geometry'
+import { MousePointerClick } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { screenToWorld } from '@/core/coordinates/viewport.js'
+import { snapItemPosition } from '@/core/editing'
+import { DEFAULT_SIZE_BOUNDS, ROOM_TYPES } from '@/core/model'
 import { formatLength } from '@/core/units/units.js'
+import { getCatalogEntry, getSizeBounds } from '@/data/catalog/furniture.js'
 import { useElementSize } from '@/hooks/useElementSize.js'
-import { selectActiveItems, selectRoom, selectSettings } from '@/store/selectors.js'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.js'
+import { addCatalogItem } from '@/store/commands.js'
+import { useEditorStore } from '@/store/editorStore.js'
+import { computeLayoutMetrics, selectRoom, selectSettings, useDisplayedItems } from '@/store/selectors.js'
 import { useProjectStore } from '@/store/projectStore.js'
-import { fitRoom, gridLines, scaleBarLength, toScreen } from './planGeometry.js'
+import { DropGhost } from './DropGhost.jsx'
+import { PlanItem } from './PlanItem.jsx'
+import { gridLines, scaleBarLength, toScreen } from './planGeometry.js'
+import { SelectionOverlay } from './SelectionOverlay.jsx'
+import { usePlanPointer } from './usePlanPointer.js'
+import { useViewport } from './useViewport.js'
+import { ZOOM_STEP, ZoomControls } from './ZoomControls.jsx'
 import './PlanView.css'
 
+export const CATALOG_DRAG_TYPE = 'application/x-spaceshift-catalog'
+
 /**
- * Planta 2D à escala, desenhada em SVG a partir do modelo (metros).
- * O enquadramento é recalculado quando a janela ou a divisão mudam, por
- * isso as proporções são sempre as reais. Zoom, deslocação e manipulação
- * de móveis são adicionados na Fase 3.
+ * Editor 2D. Desenha a planta em SVG a partir do modelo (metros) com a
+ * transformação do viewport; nenhuma medida do modelo está em píxeis.
  */
 export function PlanView() {
   const [containerRef, size] = useElementSize()
+  const svgRef = useRef(null)
   const room = useProjectStore(selectRoom)
   const settings = useProjectStore(selectSettings)
-  const items = useProjectStore(selectActiveItems)
+  const updateSettings = useProjectStore((state) => state.updateSettings)
+  const items = useDisplayedItems()
+  const selectedId = useEditorStore((state) => state.selectedItemId)
+  const selectItem = useEditorStore((state) => state.selectItem)
+  const interaction = useEditorStore((state) => state.interaction)
+  const catalogDragId = useEditorStore((state) => state.catalogDragId)
+  const { viewport, zoomBy, pan, fit, zoomPercent } = useViewport(room, size)
+  const pointer = usePlanPointer({ svgRef, viewport, pan, zoomBy })
+  const [dropPoint, setDropPoint] = useState(null)
 
-  const ready = size.width > 0 && size.height > 0
-  const viewport = useMemo(() => (ready ? fitRoom(room, size) : null), [ready, room, size])
+  const conflictIds = useMemo(() => computeLayoutMetrics(room, items).conflictIds, [room, items])
+  const selected = items.find((item) => item.id === selectedId) ?? null
+  const dragEntry = catalogDragId ? getCatalogEntry(catalogDragId) : null
+
+  useKeyboardShortcuts([
+    { key: ['+', '='], handler: () => zoomBy(ZOOM_STEP) },
+    { key: ['-', '_'], handler: () => zoomBy(1 / ZOOM_STEP) },
+    { key: '0', handler: fit },
+    { key: 'g', handler: () => updateSettings({ snapToGrid: !settings.snapToGrid }) },
+  ])
+
+  const worldFromClient = (event) => {
+    const rect = svgRef.current.getBoundingClientRect()
+    return screenToWorld(viewport, { x: event.clientX - rect.left, y: event.clientY - rect.top })
+  }
+
+  const dropProps = {
+    onDragOver: (event) => {
+      if (!dragEntry || !viewport) return
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'copy'
+      const world = worldFromClient(event)
+      if (!Number.isFinite(world.x) || !Number.isFinite(world.z)) return
+      const draft = { position: { x: 0, z: 0 }, dimensions: dragEntry.dimensions, rotation: 0 }
+      setDropPoint(snapItemPosition(draft, world, settings.gridSize, settings.snapToGrid))
+    },
+    onDragLeave: () => setDropPoint(null),
+    onDrop: (event) => {
+      const id = event.dataTransfer.getData(CATALOG_DRAG_TYPE) || catalogDragId
+      setDropPoint(null)
+      if (!id || !viewport) return
+      event.preventDefault()
+      addCatalogItem(id, worldFromClient(event))
+      useEditorStore.getState().setCatalogDrag(null)
+    },
+  }
 
   return (
-    <div ref={containerRef} className="plan-view">
-      {viewport && <PlanSvg room={room} settings={settings} items={items} viewport={viewport} size={size} />}
+    <div
+      ref={containerRef}
+      className="plan-view"
+      data-interaction={interaction?.type}
+      data-dragging-catalog={dragEntry ? true : undefined}
+      {...dropProps}
+    >
+      {viewport && (
+        <svg
+          ref={svgRef}
+          className="plan-svg"
+          width={size.width}
+          height={size.height}
+          viewBox={`0 0 ${size.width} ${size.height}`}
+          aria-label={`Planta da divisão: ${ROOM_TYPES[room.type].label}, ${formatLength(room.width)} por ${formatLength(room.depth)}`}
+          role="group"
+          data-scale={viewport.scale.toFixed(3)}
+          {...pointer}
+        >
+          <RoomLayer room={room} settings={settings} viewport={viewport} />
+          <g className="plan-items">
+            {items.map((item) => (
+              <PlanItem
+                key={item.id}
+                item={item}
+                viewport={viewport}
+                selected={item.id === selectedId}
+                conflict={conflictIds.has(item.id)}
+                onSelect={selectItem}
+              />
+            ))}
+          </g>
+          <WallsLayer room={room} viewport={viewport} />
+          {selected && (
+            <SelectionOverlay
+              item={selected}
+              viewport={viewport}
+              bounds={getSizeBounds(selected.catalogId, DEFAULT_SIZE_BOUNDS)}
+              interacting={interaction?.itemId === selected.id}
+            />
+          )}
+          {dragEntry && dropPoint && <DropGhost entry={dragEntry} position={dropPoint} viewport={viewport} />}
+          <ScaleBar viewport={viewport} height={size.height} />
+        </svg>
+      )}
+
+      {items.length === 0 && !dragEntry && (
+        <div className="plan-hint">
+          <MousePointerClick size={16} strokeWidth={1.75} aria-hidden="true" />
+          Arraste um móvel do catálogo para a planta ou use o botão +.
+        </div>
+      )}
+
+      <ZoomControls
+        zoomPercent={zoomPercent}
+        onZoomIn={() => zoomBy(ZOOM_STEP)}
+        onZoomOut={() => zoomBy(1 / ZOOM_STEP)}
+        onFit={fit}
+        snap={settings.snapToGrid}
+        onToggleSnap={() => updateSettings({ snapToGrid: !settings.snapToGrid })}
+      />
     </div>
   )
 }
 
-function PlanSvg({ room, settings, items, viewport, size }) {
-  const { scale } = viewport
-  const t = room.wallThickness
+function RoomLayer({ room, settings, viewport }) {
   const inner = { a: toScreen(viewport, 0, 0), b: toScreen(viewport, room.width, room.depth) }
-  const outer = { a: toScreen(viewport, -t, -t), b: toScreen(viewport, room.width + t, room.depth + t) }
-  const lines = gridLines(room, settings.gridSize, scale)
-  const barMetres = scaleBarLength(scale)
-  const label = `Planta da divisão: ${ROOM_TYPES[room.type].label}, ${formatLength(room.width)} por ${formatLength(room.depth)}`
-
+  const lines = gridLines(room, settings.gridSize, viewport.scale)
+  const box = { x: inner.a.x, y: inner.a.y, width: inner.b.x - inner.a.x, height: inner.b.y - inner.a.y }
   return (
-    <svg
-      className="plan-svg"
-      width={size.width}
-      height={size.height}
-      viewBox={`0 0 ${size.width} ${size.height}`}
-      role="img"
-      aria-label={label}
-      data-scale={scale.toFixed(3)}
-    >
-      {/* Chão */}
-      <rect
-        className="plan-floor-base"
-        x={inner.a.x}
-        y={inner.a.y}
-        width={inner.b.x - inner.a.x}
-        height={inner.b.y - inner.a.y}
-      />
-      <rect
-        data-testid="plan-floor"
-        x={inner.a.x}
-        y={inner.a.y}
-        width={inner.b.x - inner.a.x}
-        height={inner.b.y - inner.a.y}
-        fill={room.floorColor}
-        opacity={0.28}
-      />
-
-      {/* Grelha */}
+    <g>
+      <rect className="plan-floor-base" {...box} />
+      <rect data-testid="plan-floor" {...box} fill={room.floorColor} opacity={0.28} />
       <g className="plan-grid" aria-hidden="true">
         {lines.map((line) => {
           const p = line.axis === 'x' ? toScreen(viewport, line.value, 0) : toScreen(viewport, 0, line.value)
@@ -78,52 +162,38 @@ function PlanSvg({ room, settings, items, viewport, size }) {
           )
         })}
       </g>
+    </g>
+  )
+}
 
-      {/* Móveis (representação simples; símbolos detalhados na Fase 4) */}
-      <g className="plan-items">
-        {items.map((item) => {
-          const points = getFootprint(item)
-            .map((corner) => toScreen(viewport, corner.x, corner.z))
-            .map((p) => `${p.x},${p.y}`)
-            .join(' ')
-          return <polygon key={item.id} points={points} fill={item.color} />
-        })}
-      </g>
-
-      {/* Paredes: retângulo exterior menos o interior */}
+function WallsLayer({ room, viewport }) {
+  const t = room.wallThickness
+  const inner = { a: toScreen(viewport, 0, 0), b: toScreen(viewport, room.width, room.depth) }
+  const outer = { a: toScreen(viewport, -t, -t), b: toScreen(viewport, room.width + t, room.depth + t) }
+  return (
+    <g aria-hidden="true">
       <path
         className="plan-walls"
         fillRule="evenodd"
         d={`M${outer.a.x},${outer.a.y}H${outer.b.x}V${outer.b.y}H${outer.a.x}Z M${inner.a.x},${inner.a.y}V${inner.b.y}H${inner.b.x}V${inner.a.y}Z`}
       />
+      <Dimension orientation="horizontal" from={inner.a.x} to={inner.b.x} at={outer.a.y - 22} label={formatLength(room.width)} name="Comprimento" />
+      <Dimension orientation="vertical" from={inner.a.y} to={inner.b.y} at={outer.a.x - 22} label={formatLength(room.depth)} name="Largura" />
+    </g>
+  )
+}
 
-      {/* Cotas interiores */}
-      <Dimension
-        orientation="horizontal"
-        from={inner.a.x}
-        to={inner.b.x}
-        at={outer.a.y - 22}
-        label={formatLength(room.width)}
-        name="Comprimento"
-      />
-      <Dimension
-        orientation="vertical"
-        from={inner.a.y}
-        to={inner.b.y}
-        at={outer.a.x - 22}
-        label={formatLength(room.depth)}
-        name="Largura"
-      />
-
-      {/* Barra de escala */}
-      <g className="plan-scale" transform={`translate(20 ${size.height - 22})`} aria-hidden="true">
-        <rect x={0} y={-3} width={barMetres * scale} height={3} />
-        <rect x={0} y={-3} width={(barMetres * scale) / 2} height={3} className="plan-scale__half" />
-        <text x={barMetres * scale + 6} y={0}>
-          {formatLength(barMetres).replace(',00', '')}
-        </text>
-      </g>
-    </svg>
+function ScaleBar({ viewport, height }) {
+  const metres = scaleBarLength(viewport.scale)
+  const px = metres * viewport.scale
+  return (
+    <g className="plan-scale" transform={`translate(20 ${height - 22})`} aria-hidden="true">
+      <rect x={0} y={-3} width={px} height={3} />
+      <rect x={0} y={-3} width={px / 2} height={3} className="plan-scale__half" />
+      <text x={px + 6} y={0}>
+        {formatLength(metres).replace(',00', '')}
+      </text>
+    </g>
   )
 }
 

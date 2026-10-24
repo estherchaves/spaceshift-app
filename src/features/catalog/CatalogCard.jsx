@@ -1,18 +1,37 @@
+import { Plus } from 'lucide-react'
+import { IconButton } from '@/components/ui'
 import { FURNITURE_CATEGORIES } from '@/core/model'
+import { addCatalogItem } from '@/store/commands.js'
+import { useEditorStore } from '@/store/editorStore.js'
+import { CATALOG_DRAG_TYPE } from '@/features/editor2d/PlanView.jsx'
 import { CATEGORY_ICONS } from './categoryIcons.js'
 
 const price = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
 const cm = (m) => Math.round(m * 100)
 
 /**
- * Cartão de um móvel do catálogo. Nesta fase é informativo; na Fase 3
- * passa a poder ser arrastado ou adicionado à planta.
+ * Cartão de um móvel do catálogo. Pode ser arrastado para a planta
+ * (posição exata) ou adicionado com o botão + (procura um espaço livre
+ * perto do centro). Em ambos os casos o móvel fica selecionado.
  */
 export function CatalogCard({ entry }) {
   const Icon = CATEGORY_ICONS[entry.category]
+  const setCatalogDrag = useEditorStore((state) => state.setCatalogDrag)
   const { width, depth, height } = entry.dimensions
+
   return (
-    <article className="catalog-card" aria-label={entry.name}>
+    <article
+      className="catalog-card"
+      aria-label={entry.name}
+      draggable
+      onDragStart={(event) => {
+        event.dataTransfer.setData(CATALOG_DRAG_TYPE, entry.id)
+        event.dataTransfer.setData('text/plain', entry.name)
+        event.dataTransfer.effectAllowed = 'copy'
+        setCatalogDrag(entry.id)
+      }}
+      onDragEnd={() => setCatalogDrag(null)}
+    >
       <span className="catalog-card__preview" style={{ '--item-color': entry.color }} aria-hidden="true">
         <Icon size={20} strokeWidth={1.5} />
       </span>
@@ -26,6 +45,15 @@ export function CatalogCard({ entry }) {
           {entry.price != null && <span className="catalog-card__price">{price.format(entry.price)}</span>}
         </span>
       </span>
+      <IconButton
+        icon={Plus}
+        label={`Adicionar ${entry.name}`}
+        size="sm"
+        tooltipPlacement="top"
+        tooltipAlign="end"
+        className="catalog-card__add"
+        onClick={() => addCatalogItem(entry.id)}
+      />
     </article>
   )
 }
