@@ -3,8 +3,9 @@
 Estúdio de design de interiores no browser: desenhe uma divisão, coloque
 móveis à escala, detete colisões e veja o resultado em 2D e 3D.
 
-> Estado: **Fase 1** (arquitetura, modelo de dados, coordenadas, geometria e
-> configuração). A interface do editor chega nas fases seguintes.
+> Estado: **Fase 2** concluída. Layout completo do editor, sistema de design,
+> catálogo com pesquisa e filtros, propriedades da divisão e planta à escala.
+> A manipulação de móveis na planta chega na Fase 3.
 
 ## Requisitos
 

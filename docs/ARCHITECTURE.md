@@ -148,25 +148,27 @@ spaceshift/
 ├── public/
 │   └── favicon.svg
 └── src/
-    ├── main.jsx                # ponto de entrada                    ✓ Fase 1
+    ├── main.jsx                # ponto de entrada (carrega Inter e estilos) ✓
     ├── app/
-    │   ├── App.jsx             # raiz (Fase 1: ecrã provisório)      ✓ Fase 1
-    │   ├── App.css
-    │   └── routes.js           # Fase 2: escolha de página (início / editor)
-    ├── pages/                  # Fase 2
-    │   ├── ProjectsPage/       # lista, criar, duplicar, renomear, eliminar
-    │   └── EditorPage/         # compõe as barras e painéis do editor
-    ├── components/             # Fase 2: UI genérica, sem lógica de domínio
-    │   ├── ui/                 # Button, IconButton, NumberField, Select, Toggle,
-    │   │                       # Dialog, Tooltip, Tabs, EmptyState, Toast
-    │   └── layout/             # TopBar, SidePanel, StatusBar, ResponsiveShell
+    │   └── App.jsx             # raiz; na Fase 7 escolhe lista de projetos / editor ✓
+    ├── pages/
+    │   ├── ProjectsPage/       # Fase 7: lista, criar, duplicar, renomear, eliminar
+    │   └── EditorPage/         # ✓ Fase 2: EditorPage (composição), EditorTopBar,
+    │                           #   EditorStatusBar, ProjectNameField
+    ├── components/             # UI genérica, sem lógica de domínio      ✓ Fase 2
+    │   ├── brand/Logo.jsx
+    │   ├── ui/                 # Button, IconButton, Tooltip, NumberField, Select,
+    │   │                       # Switch, SegmentedControl, ColorField, SearchField,
+    │   │                       # EmptyState, PanelSection/FieldGrid (Dialog na Fase 7)
+    │   └── layout/             # AppShell (grelha responsiva), SidePanel
     ├── features/               # módulos com UI + lógica de uma área do produto
-    │   ├── editor2d/           # Fase 3: PlanCanvas (SVG), Grid, Rulers,
-    │   │                       # FurnitureShape, SelectionHandles, useViewport,
-    │   │                       # useDragItem, symbols/ (desenhos 2D)
-    │   ├── catalog/            # Fase 4: CatalogPanel, CatalogCard, filtros,
-    │   │                       # data/furniture.js (15+ móveis)
-    │   ├── inspector/          # Fase 4: painel de propriedades
+    │   ├── editor2d/           # ✓ Fase 2: PlanView (SVG à escala), planGeometry
+    │   │                       # Fase 3: zoom/pan, arrastar, seleção, symbols/
+    │   ├── catalog/            # ✓ Fase 2: CatalogPanel, CatalogCard, filterCatalog,
+    │   │                       #   data/furniture.js (22 móveis), data/finishes.js
+    │   │                       # Fase 4: pré-visualização 2D e adicionar à planta
+    │   ├── inspector/          # ✓ Fase 2: PropertiesPanel, RoomInspector
+    │   │                       # Fase 4: propriedades do móvel selecionado
     │   ├── scene3d/            # Fase 5: Scene3D, Room3D, Furniture3D,
     │   │                       # models/ (geometria procedimental), Lights
     │   ├── analysis/           # Fase 6: painel de problemas e marcadores
@@ -182,19 +184,21 @@ spaceshift/
     │   │   └── clearance.js    # Fase 6: distâncias e circulação
     │   ├── model/              # tipos, constantes, fábricas, métricas,
     │   │                       # validação, migrações, (de)serialização ✓ Fase 1
+    │   │                       # sanitize.js (alterações seguras)      ✓ Fase 2
     │   ├── analysis/           # Fase 6: analyzeLayout() → erros e avisos
     │   └── history/            # Fase 7: pilha undo/redo com transações
-    ├── store/                  # Fase 2–3: Zustand
-    │   ├── projectStore.js     # documento + ações (addItem, moveItem…)
-    │   ├── editorStore.js      # estado efémero: seleção, vista 2D/3D, ferramenta
-    │   └── selectors.js
+    ├── store/                  # ✓ Fase 2: Zustand
+    │   ├── projectStore.js     # documento + ações (renomear, divisão, definições;
+    │   │                       #   addItem, moveItem… na Fase 3)
+    │   ├── editorStore.js      # estado efémero: vista 2D/3D, painel móvel, seleção
+    │   └── selectors.js        # seletores + computeLayoutMetrics
     ├── services/               # Fase 7: fronteira com o exterior
     │   ├── persistence/
     │   │   ├── ProjectRepository.js     # contrato (list, get, save, remove)
     │   │   └── localStorageRepository.js
     │   └── export/             # renderização PNG, download de ficheiros
-    ├── hooks/                  # hooks genéricos: useKeyboardShortcuts,
-    │                           # useResizeObserver, usePointerDrag
+    ├── hooks/                  # useElementSize ✓; useKeyboardShortcuts,
+    │                           # usePointerDrag (Fases 3 e 7)
     ├── utils/                  # utilitários sem domínio (download, debounce)
     ├── styles/
     │   ├── tokens.css          # cores, tipografia, espaçamentos      ✓ Fase 1
@@ -225,3 +229,22 @@ Os testes ficam ao lado do código que testam (`*.test.js`).
   para `fetch()` não mude quem os chama.
 - Os ids são strings opacas (`project_<uuid>`), compatíveis com uma base de dados.
 - O esquema versionado e a validação podem ser reutilizados no servidor.
+
+## 9. Interface (Fase 2)
+
+- **Layout:** grelha CSS com barra superior, catálogo (esquerda), área
+  central, propriedades (direita) e barra inferior. Abaixo de 900 px os três
+  painéis passam a separadores (Catálogo / Planta / Propriedades) e só um é
+  visível de cada vez.
+- **Ações de fases seguintes** (Anular, Refazer, Guardar, Exportar, vista 3D)
+  já estão no sítio final mas desativadas com `aria-disabled` e o motivo em
+  tooltip e `aria-describedby`. Nenhum botão finge fazer algo que não faz.
+- **Campos numéricos** confirmam com Enter/saída do campo, aceitam vírgula,
+  ajustam com as setas e limitam aos valores válidos. Cada confirmação é uma
+  única alteração, preparando o agrupamento do Undo/Redo.
+- **Tipografia:** Inter Variable, servida localmente (`@fontsource-variable/inter`),
+  sem pedidos a serviços externos.
+- **Conflitos na barra inferior:** contagem real com a geometria da Fase 1
+  (móveis fora da divisão e sobreposições SAT). Revestimentos de chão com
+  altura ≤ 3 cm (tapetes) e objetos elevados não contam como sobreposição.
+  A análise completa com circulação chega na Fase 6.

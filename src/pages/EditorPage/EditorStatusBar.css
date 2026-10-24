@@ -1,0 +1,75 @@
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: 100%;
+  padding: 0 var(--space-4);
+  border-top: var(--border);
+  background: var(--color-surface);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.statusbar__metrics {
+  display: flex;
+  gap: var(--space-5);
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.statusbar__metric {
+  display: flex;
+  gap: 6px;
+}
+
+.statusbar__metric dt {
+  color: var(--color-text-subtle);
+}
+
+.statusbar__metric dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.statusbar__end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.statusbar__conflicts {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: var(--weight-medium);
+}
+
+.statusbar__conflicts[data-state='ok'] {
+  color: var(--color-success);
+}
+
+.statusbar__conflicts[data-state='error'] {
+  color: var(--color-danger);
+}
+
+.statusbar__muted {
+  color: var(--color-text-subtle);
+}
+
+@media (max-width: 899px) {
+  .statusbar {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .statusbar__optional {
+    display: none;
+  }
+
+  .statusbar__metrics {
+    gap: var(--space-3);
+  }
+}

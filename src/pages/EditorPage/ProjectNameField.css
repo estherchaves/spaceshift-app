@@ -1,0 +1,45 @@
+.project-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 260px;
+  height: 30px;
+  padding: 0 var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+button.project-name:hover {
+  background: var(--color-surface-sunken);
+}
+
+.project-name__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-name__icon {
+  flex: none;
+  color: var(--color-text-subtle);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.project-name:hover .project-name__icon,
+.project-name:focus-visible .project-name__icon {
+  opacity: 1;
+}
+
+.project-name--editing {
+  width: 240px;
+  border-color: var(--color-focus);
+  background: var(--color-surface);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(47 111 214 / 0.14);
+}

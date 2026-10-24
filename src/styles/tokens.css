@@ -1,37 +1,101 @@
 /*
- * Design tokens do SpaceShift. A Fase 2 expande este ficheiro com o
- * sistema de design completo; aqui ficam as bases neutras.
+ * Design tokens do SpaceShift.
+ * Direção: estúdio de arquitetura. Neutros quentes (papel, pedra, grafite),
+ * um único acento latão para ações principais e seleção, linhas finas,
+ * sombras quase impercetíveis. Todas as cores de estado têm contraste AA
+ * sobre --color-surface.
  */
 :root {
-  --color-bg: #f4f4f2;
+  /* Neutros */
+  --color-bg: #f3f2ef;
+  --color-canvas: #ebe9e4;
   --color-surface: #ffffff;
-  --color-surface-muted: #ecebe8;
-  --color-border: #dedcd7;
-  --color-text: #1f2124;
-  --color-text-muted: #6b6d70;
-  --color-graphite: #2b2d31;
-  --color-accent: #b08a5c;
-  --color-danger: #c4453c;
-  --color-warning: #c98a1b;
-  --color-success: #3f8a5a;
+  --color-surface-muted: #f7f6f3;
+  --color-surface-sunken: #efeee9;
+  --color-border: #e2e0da;
+  --color-border-strong: #cfccc4;
+  --color-text: #1d1f22;
+  --color-text-muted: #64666a;
+  --color-text-subtle: #8c8d90;
+  --color-graphite: #26282c;
+  --color-graphite-hover: #3a3d42;
+  --color-on-graphite: #f6f5f2;
 
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* Acento e estados */
+  --color-accent: #a27c4f;
+  --color-accent-strong: #8a6740;
+  --color-accent-soft: #f4ede3;
+  --color-danger: #b8423a;
+  --color-danger-soft: #f9ebe9;
+  --color-warning: #a8700f;
+  --color-warning-soft: #fbf3e2;
+  --color-success: #3a7d55;
+  --color-success-soft: #e9f3ed;
+  --color-focus: #2f6fd6;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* Planta */
+  --plan-grid-minor: rgb(38 40 44 / 0.06);
+  --plan-grid-major: rgb(38 40 44 / 0.13);
+  --plan-wall: #2b2d31;
+  --plan-dimension: #6b6d70;
 
+  /* Tipografia */
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --tracking-tight: -0.011em;
+  --tracking-caps: 0.06em;
+
+  /* Espaçamento (grelha de 4 px) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-10: 40px;
 
-  --shadow-sm: 0 1px 2px rgb(20 20 20 / 0.06);
-  --shadow-md: 0 8px 24px -12px rgb(20 20 20 / 0.18);
+  /* Forma */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+  --border: 1px solid var(--color-border);
 
+  /* Profundidade */
+  --shadow-xs: 0 1px 1px rgb(20 20 20 / 0.04);
+  --shadow-sm: 0 1px 2px rgb(20 20 20 / 0.06), 0 0 0 1px rgb(20 20 20 / 0.02);
+  --shadow-md: 0 10px 30px -14px rgb(20 20 20 / 0.22), 0 2px 6px -2px rgb(20 20 20 / 0.06);
+  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
+
+  /* Movimento */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --duration-fast: 120ms;
+  --duration-base: 180ms;
+
+  /* Layout do editor */
+  --topbar-h: 56px;
+  --statusbar-h: 32px;
+  --panel-left-w: 288px;
+  --panel-right-w: 304px;
+  --control-h: 32px;
+  --control-h-sm: 28px;
+}
+
+@media (max-width: 1279px) {
+  :root {
+    --panel-left-w: 248px;
+    --panel-right-w: 272px;
+  }
 }

@@ -1,0 +1,78 @@
+.app-shell {
+  display: grid;
+  height: 100dvh;
+  grid-template-columns: var(--panel-left-w) minmax(0, 1fr) var(--panel-right-w);
+  grid-template-rows: var(--topbar-h) minmax(0, 1fr) var(--statusbar-h);
+  grid-template-areas:
+    'top top top'
+    'left main right'
+    'status status status';
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.app-shell__top {
+  grid-area: top;
+  min-width: 0;
+}
+
+.app-shell__mobile-nav {
+  display: none;
+}
+
+.app-shell__left {
+  grid-area: left;
+  min-height: 0;
+  border-right: var(--border);
+}
+
+.app-shell__main {
+  grid-area: main;
+  min-width: 0;
+  min-height: 0;
+}
+
+.app-shell__right {
+  grid-area: right;
+  min-height: 0;
+  border-left: var(--border);
+}
+
+.app-shell__status {
+  grid-area: status;
+  min-width: 0;
+}
+
+/* Tablet e telemóvel: um painel de cada vez, escolhido na barra de separadores. */
+@media (max-width: 899px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--topbar-h) auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'top'
+      'nav'
+      'panel'
+      'status';
+  }
+
+  .app-shell__mobile-nav {
+    display: block;
+    grid-area: nav;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: var(--border);
+    background: var(--color-surface);
+  }
+
+  .app-shell__left,
+  .app-shell__main,
+  .app-shell__right {
+    grid-area: panel;
+    border: 0;
+  }
+
+  .app-shell:not([data-mobile-panel='catalog']) .app-shell__left,
+  .app-shell:not([data-mobile-panel='plan']) .app-shell__main,
+  .app-shell:not([data-mobile-panel='properties']) .app-shell__right {
+    display: none;
+  }
+}

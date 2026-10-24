@@ -1,0 +1,22 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.logo__mark {
+  flex: none;
+  display: block;
+}
+
+.logo__wordmark {
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.logo__wordmark span {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
