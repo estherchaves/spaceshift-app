@@ -164,12 +164,15 @@ spaceshift/
 ├── docs/
 │   └── ARCHITECTURE.md
 ├── public/
-│   └── favicon.svg
+│   ├── favicon.svg
+│   └── pwa-192/512, pwa-maskable-512, apple-touch-icon (PNG)
 └── src/
     ├── main.jsx                # ponto de entrada (carrega Inter e estilos) ✓
     ├── app/
     │   ├── App.jsx             # raiz: lista de projetos ou editor, pela rota ✓ Fase 7
     │   ├── router.js           # rotas por hash (#/ e #/projeto/<id>)        ✓ Fase 7
+    │   ├── pwaStore.js         # ✓ PWA: pedido de instalação e «instalada»
+    │   ├── registerPwa.js      # ✓ PWA: service worker, avisos offline e versão nova
     │   └── Toaster.jsx         # notificações breves                           ✓ Fase 7
     ├── pages/
     │   ├── ProjectsPage/       # ✓ Fase 7: lista, criar, duplicar, renomear, eliminar, importar
@@ -610,3 +613,28 @@ Ferramenta na barra da planta (tecla P); Esc sai.
 catálogo com as medidas mais parecidas. O móvel fica com `customSize: true`:
 usa o desenho e o 3D do modelo, mas as medidas não ficam presas aos limites
 dele.
+
+## 18. App instalável e sem internet (PWA)
+
+`vite-plugin-pwa` (modo `generateSW`, Workbox) gera o manifesto e o service
+worker no build. Como não há servidor, a cache só precisa dos ficheiros da
+app: 36 entradas, cerca de 2 MB, incluindo o módulo 3D e as fontes. As
+rotas são por hash, por isso qualquer endereço abre a partir de
+`index.html`; os projetos já estavam no `localStorage` do aparelho.
+
+- **Registo só em produção** (`main.jsx` importa `registerPwa.js` quando
+  `import.meta.env.PROD`): em desenvolvimento a cache esconderia alterações.
+- **Atualizações com `registerType: 'prompt'`**: a versão nova fica à espera
+  e aparece uma notificação persistente «Há uma versão nova» com
+  «Atualizar». Assim nunca se recarrega a meio de um gesto ou de um diálogo.
+  Na primeira visita aparece «Pronto: o SpaceShift já funciona sem internet».
+- **Instalar:** `pwaStore.js` guarda o `beforeinstallprompt` (Chrome, Edge,
+  Android) e a lista de projetos mostra «Instalar app». No iOS instala-se
+  pelo menu Partilhar (ícone `apple-touch-icon.png`). Aberta em janela
+  própria (`display-mode: standalone`), o botão desaparece.
+- **Ícones:** o logótipo em PNG 192 e 512, e uma versão *maskable* com o
+  desenho dentro da zona segura de 80 %.
+
+Verificado com Chromium: o Chrome não aponta erros de instalação nem no
+manifesto; sem rede, a lista, o editor e a vista 3D abrem; e, depois de um
+build novo, aparece o aviso e «Atualizar» carrega a versão nova.

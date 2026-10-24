@@ -26,6 +26,7 @@ export function notify(message, { tone = 'info', duration, action } = {}) {
   // No máximo três ao mesmo tempo: a mais antiga sai.
   useToastStore.setState((state) => ({ toasts: [...state.toasts.slice(-2), toast] }))
   const ms = duration ?? (tone === 'error' ? 7000 : 3200)
-  timers.set(id, setTimeout(() => useToastStore.getState().dismiss(id), ms))
+  // duration: Infinity → fica até a pessoa a fechar ou usar a ação.
+  if (Number.isFinite(ms)) timers.set(id, setTimeout(() => useToastStore.getState().dismiss(id), ms))
   return id
 }

@@ -38,6 +38,9 @@ cabe, o que se sobrepõe e por onde já não se consegue andar.
 - **Exportação**: planta em PNG com cotas e lista de móveis, vista 3D em
   PNG e uma **ficha para imprimir ou guardar em PDF** (A4, com os móveis
   numerados na planta).
+- **Instalável e sem internet** (PWA): «Instalar app» abre o SpaceShift em
+  janela própria, e depois da primeira visita tudo funciona offline,
+  incluindo a vista 3D. Uma versão nova só entra quando se aceita.
 - **Acessível e responsivo**: navegação por teclado (setas movem o móvel
   selecionado, R roda, Delete apaga), contraste AA verificado com axe em
   computador, tablet e telemóvel, respeito por «reduzir movimento» e
@@ -103,5 +106,6 @@ disposições para experimentar a comparação.
 
 Fases 1 a 9 concluídas (fundações, planta, catálogo, edição, 3D, análise,
 projetos, qualidade e, na Fase 9, portas e janelas, «passa pela porta?»,
-percurso a pé, acessibilidade e medidas de uma loja). A seguir: partilhar
+percurso a pé, acessibilidade e medidas de uma loja), e PWA instalável
+que funciona sem internet. A seguir: partilhar
 uma disposição por link (precisa de um servidor).

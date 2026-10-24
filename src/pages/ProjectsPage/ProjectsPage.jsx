@@ -1,5 +1,6 @@
-import { HardDrive, Plus, Sparkles, Upload } from 'lucide-react'
+import { Download, HardDrive, Plus, Sparkles, Upload } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
+import { promptInstall, usePwaStore } from '@/app/pwaStore.js'
 import { editorPath, navigate } from '@/app/router.js'
 import { Logo } from '@/components/brand/Logo.jsx'
 import { Button, ConfirmDialog, SearchField, Select } from '@/components/ui'
@@ -120,12 +121,24 @@ export function ProjectsPage() {
     })
 
   const empty = status === 'ready' && projects.length === 0
+  const canInstall = usePwaStore((state) => Boolean(state.installPrompt) && !state.installed)
 
   return (
     <div className="projects-page">
       <header className="projects-header">
         <Logo />
         <div className="projects-header__actions">
+          {canInstall && (
+            <Button
+              icon={Download}
+              className="projects-header__import"
+              aria-label="Instalar o SpaceShift como app"
+              title="Instalar como app: abre em janela própria e funciona sem internet"
+              onClick={promptInstall}
+            >
+              Instalar app
+            </Button>
+          )}
           <Button icon={Upload} onClick={() => fileInput.current?.click()} className="projects-header__import" aria-label="Importar projeto (JSON)">
             Importar
           </Button>
