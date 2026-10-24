@@ -1,35 +1,94 @@
 # SpaceShift
 
-Estúdio de design de interiores no browser: desenhe uma divisão, coloque
-móveis à escala, detete colisões e veja o resultado em 2D e 3D.
+**Será que cabe? E consegue-se passar?** O SpaceShift é um estúdio de
+interiores no browser para responder a estas duas perguntas antes de
+comprar um móvel: desenha-se a divisão à escala, colocam-se os móveis
+com as medidas reais e a aplicação mostra, em 2D e em 3D, o que não
+cabe, o que se sobrepõe e por onde já não se consegue andar.
 
-> Estado: **Fase 5** concluída. Vista 3D sincronizada com a planta (modos
-> 2D, 3D e dividido), modelos procedimentais para todos os móveis, arrasto
-> no 3D, vistas rápidas da câmara e corte automático das paredes.
-> A seguir: Fase 6 (colisões e circulação).
+![Editor com a planta e a análise de circulação](docs/images/editor.png)
 
-## Requisitos
+## O que faz
 
-- Node.js 20.19+ (testado com Node 22) e npm 10+
+- **Planta 2D à escala** (SVG): arrastar, rodar e redimensionar móveis,
+  com encaixe na grelha, cotas e zoom (roda do rato, trackpad ou dois dedos).
+- **Vista 3D sincronizada** (React Three Fiber): a mesma disposição em
+  3D, com modelos procedimentais, vistas rápidas da câmara e corte
+  automático das paredes. Modo dividido com as duas vistas lado a lado.
+- **Análise da disposição**: móveis fora da divisão, sobreposições,
+  objetos mais altos do que o teto, passagens mais estreitas do que o
+  mínimo escolhido e espaço de uso em falta (abrir o roupeiro, puxar a
+  cadeira). A circulação livre é desenhada por cima da planta.
+- **Várias disposições por projeto** e **comparação lado a lado** com uma
+  pontuação transparente (espaço livre, circulação, problemas) e o custo
+  indicativo.
+- **Projetos guardados no browser** com gravação automática, anular e
+  refazer (um passo por gesto) e importação/exportação em JSON.
+- **Exportação**: planta em PNG com cotas e lista de móveis, vista 3D em
+  PNG e uma **ficha para imprimir ou guardar em PDF** (A4, com os móveis
+  numerados na planta).
+- **Acessível e responsivo**: navegação por teclado (setas movem o móvel
+  selecionado, R roda, Delete apaga), contraste AA verificado com axe em
+  computador, tablet e telemóvel, respeito por «reduzir movimento» e
+  interface própria para ecrãs pequenos.
 
-## Comandos
+| Comparar disposições | Ficha para imprimir | Telemóvel |
+| --- | --- | --- |
+| ![Comparação de duas disposições](docs/images/comparar.png) | ![Ficha do projeto em A4](docs/images/ficha.png) | ![Editor no telemóvel](docs/images/telemovel.png) |
+
+## Tecnologia
+
+React 19 e JavaScript (sem TypeScript), Vite, Zustand, Three.js com
+React Three Fiber e drei, lucide-react, Vitest com Testing Library e
+Oxlint. Sem servidor: os projetos ficam no `localStorage`, atrás de um
+repositório assíncrono que pode ser trocado por uma API.
+
+Algumas decisões que vale a pena ver no código:
+
+- **Núcleo sem React** (`src/core`): modelo, geometria (polígonos
+  rodados, distâncias), análise de colisões e circulação (grelha com
+  transformada de distância) e histórico. É tudo funções puras e testadas.
+- **Um documento, duas vistas**: a planta e a cena 3D leem o mesmo
+  estado. Durante um arrasto só muda uma pré-visualização, e o documento
+  é alterado uma vez, ao largar (é isso que dá um passo de anular por gesto).
+- **Carregamento por partes**: o editor, a vista 3D e a exportação de
+  imagens são módulos à parte, por isso a lista de projetos abre depressa.
+
+Mais detalhe em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Correr localmente
+
+Requer Node.js 20.19+ (testado com Node 22) e npm 10+.
 
 ```bash
 npm install        # instalar dependências
 npm run dev        # servidor de desenvolvimento (http://localhost:5173)
 npm run test       # testes (Vitest)
-npm run test:watch # testes em modo watch
 npm run lint       # Oxlint (avisos fazem falhar)
 npm run build      # build de produção em dist/
 npm run preview    # servir o build
 npm run check      # lint + testes + build
 ```
 
-## Documentação
+Na primeira abertura, «Abrir projeto de exemplo» cria uma sala com duas
+disposições para experimentar a comparação.
 
-- [Arquitetura e decisões técnicas](docs/ARCHITECTURE.md)
+## Atalhos
 
-## Stack
+| Tecla | Ação |
+| --- | --- |
+| Setas (Shift = passo maior) | Mover o móvel selecionado |
+| R / Shift+R | Rodar |
+| Ctrl+D | Duplicar |
+| L | Bloquear ou desbloquear |
+| Delete | Apagar |
+| Ctrl+Z / Ctrl+Shift+Z | Anular / refazer |
+| Ctrl+S | Gravar já |
+| Ctrl+P | Imprimir a ficha do projeto |
+| Espaço + arrastar | Deslocar a planta |
 
-React 19 (JavaScript) · Vite 8 · React Three Fiber + Drei + Three.js · Zustand ·
-Lucide React · Vitest + Testing Library.
+## Estado
+
+Fases 1 a 8 concluídas (fundações, planta, catálogo, edição, 3D, análise,
+projetos e qualidade). A seguir: portas e janelas nas paredes, com a
+abertura da porta contada nas colisões, e a verificação «passa pela porta?».

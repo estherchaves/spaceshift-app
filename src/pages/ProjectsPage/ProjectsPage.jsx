@@ -126,7 +126,7 @@ export function ProjectsPage() {
       <header className="projects-header">
         <Logo />
         <div className="projects-header__actions">
-          <Button icon={Upload} onClick={() => fileInput.current?.click()} className="projects-header__import">
+          <Button icon={Upload} onClick={() => fileInput.current?.click()} className="projects-header__import" aria-label="Importar projeto (JSON)">
             Importar
           </Button>
           <Button variant="primary" icon={Plus} onClick={() => setDialog({ type: 'new' })}>

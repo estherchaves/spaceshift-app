@@ -10,7 +10,7 @@ export function AppShell({ topBar, mobileNav, left, main, right, statusBar, mobi
   return (
     <div className="app-shell" data-mobile-panel={mobilePanel} data-overlay={overlay ? true : undefined}>
       <div className="app-shell__top">{topBar}</div>
-      <div className="app-shell__mobile-nav">{mobileNav}</div>
+      <nav className="app-shell__mobile-nav" aria-label="Painéis do editor">{mobileNav}</nav>
       <div className="app-shell__left" data-panel="catalog">
         {left}
       </div>

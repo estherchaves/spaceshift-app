@@ -491,3 +491,36 @@ Ideias para diferenciar o SpaceShift, centradas em «cabe?» e «consigo passar?
   tapete tem 1 cm, por isso um projeto com tapete não voltava a abrir. A
   altura passou a ter limite próprio (1 cm) e há um teste que guarda e
   reabre todos os móveis do catálogo.
+
+## 16. Qualidade, acessibilidade e polimento (Fase 8)
+
+- **Auditoria com axe-core** em 8 ecrãs (lista vazia e com projetos,
+  editor com e sem seleção, análise, 3D, comparação, diálogo) a 1440 ×
+  900, 820 × 1180 e 390 × 844: zero violações. Correções: cores de texto
+  secundário e de estado escurecidas para AA (`tokens.css`), separadores de
+  disposição como grupo de botões com `aria-pressed`, um `h1` por página
+  (o nome do projeto no editor), marcos `main`/`nav` sem duplicados, nome
+  acessível do botão Importar no telemóvel.
+- **Cartão de projeto:** o botão de abrir contém só o nome (o nome
+  acessível é o texto visível) e estica-se por cima do cartão com
+  `::after`; os detalhes ficam como descrição.
+- **Atalhos:** `useKeyboardShortcuts` não dispara com um diálogo modal
+  aberto (`[aria-modal="true"]`) e o editor desliga-os durante a
+  comparação, para Delete não apagar o móvel que está por trás.
+- **Movimento reduzido:** além do CSS, `usePrefersReducedMotion` tira a
+  animação das vistas rápidas da câmara e a inércia do OrbitControls.
+- **Toque:** dois dedos na planta fazem zoom no ponto médio e deslocam a
+  vista; o segundo dedo cancela o gesto do primeiro sem o aplicar.
+- **Área ocupada:** a barra inferior e a comparação usam a mesma medida
+  (`blockedFloorArea`): tapetes e objetos acima da cabeça não ocupam chão.
+- **Desempenho:** com 69 móveis numa divisão de 12 × 10 m, o arrasto
+  mantém 60 fps (mediana) e a análise completa demora cerca de 7 ms por
+  movimento. O editor passou a ser um módulo à parte (`EditorRoute` com
+  `lazy`), descarregado ao mesmo tempo que o projeto é lido: o arranque
+  na lista de projetos passou de 105 para 79 kB (gzip).
+- **Ficha para imprimir** (`features/export/PrintSheet.jsx`): HTML em A4
+  ao alto montado num contentor próprio do `<body>`; no papel tudo o resto
+  fica escondido. Tem resumo e pontuação, planta à escala com cotas e os
+  móveis numerados (números sobrepostos afastam-se), tabela com medidas,
+  rotação, notas e preço, e os avisos da análise. Exportar → «Ficha para
+  imprimir ou PDF», ou Ctrl+P no editor.
