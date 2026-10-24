@@ -137,6 +137,24 @@ describe('planta: vista', () => {
     expect(screen.getByRole('button', { name: /Zoom 125%/ })).toBeInTheDocument()
   })
 
+  it('dois dedos fazem zoom e cancelam o arrasto do móvel começado pelo primeiro', () => {
+    render(<EditorPage />)
+    const before = doc()
+    const sofa = document.querySelector('[data-item-id]')
+    const c = toPx(1.5, 1)
+    const touch = (id, x, y) => ({ clientX: x, clientY: y, button: 0, pointerId: id, pointerType: 'touch' })
+    fireEvent.pointerDown(sofa, touch(1, c.x, c.y))
+    fireEvent.pointerMove(svg(), touch(1, c.x + 20, c.y))
+    fireEvent.pointerDown(svg(), touch(2, c.x + 120, c.y))
+    fireEvent.pointerMove(svg(), touch(2, c.x + 220, c.y))
+    expect(screen.getByRole('button', { name: /Zoom 200%/ })).toBeInTheDocument()
+    fireEvent.pointerUp(svg(), touch(2, c.x + 220, c.y))
+    fireEvent.pointerMove(svg(), touch(1, c.x + 80, c.y))
+    fireEvent.pointerUp(svg(), touch(1, c.x + 80, c.y))
+    expect(doc()).toBe(before)
+    expect(useEditorStore.getState().interaction).toBeNull()
+  })
+
   it('arrastar o fundo desloca a vista sem mudar a escala nem o documento', () => {
     render(<EditorPage />)
     const before = doc()

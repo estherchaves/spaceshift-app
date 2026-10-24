@@ -1,13 +1,21 @@
 import { ArrowLeft, TriangleAlert } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { navigate, projectsPath } from '@/app/router.js'
 import { Logo } from '@/components/brand/Logo.jsx'
 import { Button } from '@/components/ui'
 import { loadStoredProject } from '@/features/projects/projectActions.js'
 import { resetEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
-import { EditorPage } from './EditorPage.jsx'
 import './EditorRoute.css'
+
+/*
+ * O editor (planta, painéis, análise) vem num ficheiro à parte: a lista de
+ * projetos abre mais depressa e o código do editor descarrega-se ao mesmo
+ * tempo que o projeto é lido.
+ */
+let editorModule = null
+const loadEditorPage = () => (editorModule ??= import('./EditorPage.jsx'))
+const EditorPage = lazy(() => loadEditorPage().then((module) => ({ default: module.EditorPage })))
 
 /**
  * Abre um projeto guardado e mostra o editor. Um projeto inexistente ou
@@ -19,6 +27,7 @@ export function EditorRoute({ projectId }) {
 
   useEffect(() => {
     let cancelled = false
+    loadEditorPage()
     loadStoredProject(projectId).then((result) => {
       if (cancelled) return
       if (!result.ok) {
@@ -34,15 +43,20 @@ export function EditorRoute({ projectId }) {
     }
   }, [projectId])
 
-  if (state.status === 'ready') return <EditorPage />
-  if (state.status === 'loading') {
+  const loading = (
+    <div className="editor-route" role="status">
+      <Logo />
+      <p className="editor-route__text">A abrir o projeto…</p>
+    </div>
+  )
+  if (state.status === 'ready') {
     return (
-      <div className="editor-route" role="status">
-        <Logo />
-        <p className="editor-route__text">A abrir o projeto…</p>
-      </div>
+      <Suspense fallback={loading}>
+        <EditorPage />
+      </Suspense>
     )
   }
+  if (state.status === 'loading') return loading
   return (
     <div className="editor-route">
       <span className="editor-route__icon">

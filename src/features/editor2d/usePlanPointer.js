@@ -6,6 +6,8 @@ import { getSizeBounds } from '@/data/catalog/furniture.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
 
+const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 })
+
 /** Distância (px) a partir da qual um clique passa a ser um arrasto. */
 const DRAG_THRESHOLD = 3
 const WHEEL_ZOOM_SPEED = 0.0015
@@ -17,13 +19,16 @@ const PINCH_ZOOM_SPEED = 0.01
  *  - pegas: rodar (Shift = rotação livre) e redimensionar;
  *  - arrastar o fundo, botão do meio ou Espaço + arrastar desloca a vista;
  *  - clicar no fundo sem arrastar limpa a seleção;
- *  - roda do rato / pinça no trackpad faz zoom no ponto do cursor.
+ *  - roda do rato / pinça no trackpad faz zoom no ponto do cursor;
+ *  - em ecrãs táteis, dois dedos fazem zoom (pinça) e deslocam a vista;
+ *    o segundo dedo cancela o gesto do primeiro sem o aplicar.
  *
  * Durante o gesto só se atualiza a pré-visualização (editorStore); o
  * documento é alterado uma única vez ao largar.
  */
 export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
   const gesture = useRef(null)
+  const touches = useRef(new Map())
   const spaceDown = useRef(false)
   const viewportRef = useRef(viewport)
   useLayoutEffect(() => {
@@ -73,6 +78,13 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
   const onPointerDown = (e) => {
     if (!viewportRef.current || (e.button !== 0 && e.button !== 1)) return
     const screen = localPoint(e)
+    if (e.pointerType === 'touch') {
+      touches.current.set(e.pointerId, screen)
+      if (touches.current.size >= 2) {
+        if (touches.current.size === 2) startPinch(e)
+        return
+      }
+    }
     const world = screenToWorld(viewportRef.current, screen)
     const target = e.target instanceof Element ? e.target.closest('[data-handle], [data-item-id]') : null
     const { project } = useProjectStore.getState()
@@ -108,9 +120,32 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
     svgRef.current.setPointerCapture?.(e.pointerId)
   }
 
+  const startPinch = (e) => {
+    // O gesto do primeiro dedo (mover um móvel, deslocar) fica sem efeito.
+    useEditorStore.getState().setInteraction(null)
+    const [a, b] = [...touches.current.values()]
+    gesture.current = { type: 'pinch', distance: Math.hypot(b.x - a.x, b.y - a.y), mid: midpoint(a, b) }
+    svgRef.current.setPointerCapture?.(e.pointerId)
+  }
+
+  const movePinch = (g) => {
+    const [a, b] = [...touches.current.values()]
+    const distance = Math.hypot(b.x - a.x, b.y - a.y)
+    const mid = midpoint(a, b)
+    if (g.distance > 0 && distance > 0) zoomBy(distance / g.distance, mid)
+    pan(mid.x - g.mid.x, mid.y - g.mid.y)
+    g.distance = distance
+    g.mid = mid
+  }
+
   const onPointerMove = (e) => {
     const g = gesture.current
+    if (e.pointerType === 'touch' && touches.current.has(e.pointerId)) touches.current.set(e.pointerId, localPoint(e))
     if (!g) return
+    if (g.type === 'pinch') {
+      if (touches.current.size >= 2) movePinch(g)
+      return
+    }
     const screen = localPoint(e)
     if (!g.moved && Math.hypot(screen.x - g.start.x, screen.y - g.start.y) < DRAG_THRESHOLD) return
     g.moved = true
@@ -140,11 +175,18 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
   }
 
   const finish = (e, commit) => {
+    touches.current.delete(e.pointerId)
     const g = gesture.current
     if (!g) return
-    gesture.current = null
     svgRef.current?.releasePointerCapture?.(e.pointerId)
+    // A pinça acaba quando sai um dedo; o que fica não recomeça outro gesto.
+    if (g.type === 'pinch' && touches.current.size >= 2) return
+    gesture.current = null
     const editor = useEditorStore.getState()
+    if (g.type === 'pinch') {
+      editor.setInteraction(null)
+      return
+    }
     if (commit) {
       if (g.type === 'pan' && !g.moved) editor.selectItem(null)
       const preview = editor.interaction?.itemId === g.item?.id ? editor.interaction?.preview : null

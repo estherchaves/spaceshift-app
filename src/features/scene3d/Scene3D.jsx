@@ -2,6 +2,7 @@ import { ContactShadows, Environment, Lightformer, OrbitControls } from '@react-
 import { Canvas } from '@react-three/fiber'
 import { useState } from 'react'
 import { PCFShadowMap } from 'three'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
 import { getLayoutAnalysis, selectRoom, selectSettings, useDisplayedItems } from '@/store/selectors.js'
@@ -22,6 +23,7 @@ import './Scene3D.css'
  */
 export default function Scene3D() {
   const room = useProjectStore(selectRoom)
+  const reducedMotion = usePrefersReducedMotion()
   const items = useDisplayedItems()
   const selectedId = useEditorStore((state) => state.selectedItemId)
   const selectItem = useEditorStore((state) => state.selectItem)
@@ -101,7 +103,7 @@ export default function Scene3D() {
 
         <OrbitControls
           makeDefault
-          enableDamping
+          enableDamping={!reducedMotion}
           dampingFactor={0.12}
           minDistance={1}
           maxDistance={40}

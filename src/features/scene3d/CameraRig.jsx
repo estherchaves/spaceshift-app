@@ -1,5 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useLayoutEffect, useRef } from 'react'
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion.js'
 import { cameraView, fitView } from './room/roomGeometry.js'
 
 const DURATION = 0.6 // s
@@ -29,6 +30,7 @@ export function CameraRig({ room, request }) {
   const animation = useRef(null)
   const applied = useRef(null)
   const initialized = useRef(false)
+  const reducedMotion = usePrefersReducedMotion()
 
   // Vista inicial: assim que os controlos existem, sem transição.
   useLayoutEffect(() => {
@@ -67,7 +69,7 @@ export function CameraRig({ room, request }) {
   useFrame((_, delta) => {
     const a = animation.current
     if (!a || !controls) return
-    a.elapsed = Math.min(DURATION, a.elapsed + delta)
+    a.elapsed = reducedMotion ? DURATION : Math.min(DURATION, a.elapsed + delta)
     const t = easeInOut(a.elapsed / DURATION)
     camera.position.copy(a.fromPosition).lerp({ x: a.to.position[0], y: a.to.position[1], z: a.to.position[2] }, t)
     controls.target.copy(a.fromTarget).lerp({ x: a.to.target[0], y: a.to.target[1], z: a.to.target[2] }, t)
