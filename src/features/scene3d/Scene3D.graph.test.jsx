@@ -55,11 +55,24 @@ describe('Furniture3D', () => {
     expect(group.userData.state).toBeNull()
   })
 
-  it('marca seleção e conflito', async () => {
+  it('marca seleção, erro e aviso (o erro tem prioridade)', async () => {
     const selected = await ReactThreeTestRenderer.create(<Furniture3D item={sofa} selected ceilingHeight={2.7} />)
     expect(selected.scene.children[0].instance.userData.state).toBe('selected')
-    const conflict = await ReactThreeTestRenderer.create(<Furniture3D item={sofa} selected conflict ceilingHeight={2.7} />)
+    const conflict = await ReactThreeTestRenderer.create(<Furniture3D item={sofa} selected status="error" ceilingHeight={2.7} />)
     expect(conflict.scene.children[0].instance.userData.state).toBe('conflict')
+    const warning = await ReactThreeTestRenderer.create(<Furniture3D item={sofa} status="warning" ceilingHeight={2.7} />)
+    expect(warning.scene.children[0].instance.userData.state).toBe('warning')
+  })
+
+  it('a pegada realçada segue a forma real da mesa redonda', async () => {
+    const table = createFurnitureItem(getCatalogEntry('round-table'))
+    const renderer = await ReactThreeTestRenderer.create(<Furniture3D item={table} status="error" ceilingHeight={2.7} />)
+    const footprint = meshes(renderer).find((m) => m.instance.geometry.type === 'ShapeGeometry')
+    footprint.instance.geometry.computeBoundingBox()
+    const box = footprint.instance.geometry.boundingBox
+    expect(box.max.x - box.min.x).toBeCloseTo(1.1, 2)
+    // Uma elipse ocupa π/4 do retângulo: a geometria tem muitos vértices, não 4.
+    expect(footprint.instance.geometry.attributes.position.count).toBeGreaterThan(32)
   })
 
   it('o candeeiro suspenso tem um cabo até ao teto', async () => {

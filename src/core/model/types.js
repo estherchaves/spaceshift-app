@@ -69,6 +69,8 @@
  * @property {string} plan2d          chave do desenho 2D (símbolo de planta)
  * @property {string} model3d         chave do modelo 3D procedimental
  * @property {number} [elevation]
+ * @property {'rect'|'ellipse'|'corner'} [footprint]  forma real da pegada (colisões)
+ * @property {'seat'|'coffee-table'|'chair'|'table'|'bed'|'nightstand'} [role]  papel nas regras de uso conjunto (análise)
  */
 
 export {}

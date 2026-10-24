@@ -1,15 +1,16 @@
 import { MousePointerClick } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { screenToWorld } from '@/core/coordinates/viewport.js'
 import { snapItemPosition } from '@/core/editing'
 import { DEFAULT_SIZE_BOUNDS, ROOM_TYPES } from '@/core/model'
 import { formatLength } from '@/core/units/units.js'
-import { getCatalogEntry, getSizeBounds } from '@/data/catalog/furniture.js'
+import { getCatalogEntry, getItemProfile, getSizeBounds } from '@/data/catalog/furniture.js'
+import { AnalysisDefs, AnalysisLayer, CirculationLayer } from '@/features/analysis/AnalysisLayer.jsx'
 import { useElementSize } from '@/hooks/useElementSize.js'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.js'
 import { addCatalogItem } from '@/store/commands.js'
 import { useEditorStore } from '@/store/editorStore.js'
-import { computeLayoutMetrics, selectRoom, selectSettings, useDisplayedItems } from '@/store/selectors.js'
+import { getLayoutAnalysis, selectRoom, selectSettings, useDisplayedItems } from '@/store/selectors.js'
 import { useProjectStore } from '@/store/projectStore.js'
 import { DropGhost } from './DropGhost.jsx'
 import { PlanItem } from './PlanItem.jsx'
@@ -37,11 +38,15 @@ export function PlanView() {
   const selectItem = useEditorStore((state) => state.selectItem)
   const interaction = useEditorStore((state) => state.interaction)
   const catalogDragId = useEditorStore((state) => state.catalogDragId)
+  const showCirculation = useEditorStore((state) => state.showCirculation)
+  const setShowCirculation = useEditorStore((state) => state.setShowCirculation)
+  const focusedIssueId = useEditorStore((state) => state.focusedIssueId)
+  const analysisOpen = useEditorStore((state) => state.analysisOpen)
   const { viewport, zoomBy, pan, fit, zoomPercent } = useViewport(room, size)
   const pointer = usePlanPointer({ svgRef, viewport, pan, zoomBy })
   const [dropPoint, setDropPoint] = useState(null)
 
-  const conflictIds = useMemo(() => computeLayoutMetrics(room, items).conflictIds, [room, items])
+  const analysis = getLayoutAnalysis(room, items, settings)
   const selected = items.find((item) => item.id === selectedId) ?? null
   const dragEntry = catalogDragId ? getCatalogEntry(catalogDragId) : null
 
@@ -50,6 +55,7 @@ export function PlanView() {
     { key: ['-', '_'], handler: () => zoomBy(1 / ZOOM_STEP) },
     { key: '0', handler: fit },
     { key: 'g', handler: () => updateSettings({ snapToGrid: !settings.snapToGrid }) },
+    { key: 'c', handler: () => setShowCirculation(!showCirculation) },
   ])
 
   const worldFromClient = (event) => {
@@ -98,7 +104,9 @@ export function PlanView() {
           data-scale={viewport.scale.toFixed(3)}
           {...pointer}
         >
+          <AnalysisDefs />
           <RoomLayer room={room} settings={settings} viewport={viewport} />
+          {showCirculation && <CirculationLayer circulation={analysis.circulation} viewport={viewport} />}
           <g className="plan-items">
             {items.map((item) => (
               <PlanItem
@@ -106,12 +114,20 @@ export function PlanView() {
                 item={item}
                 viewport={viewport}
                 selected={item.id === selectedId}
-                conflict={conflictIds.has(item.id)}
+                status={analysis.itemStatus.get(item.id)}
+                shape={getItemProfile(item).shape}
                 onSelect={selectItem}
               />
             ))}
           </g>
           <WallsLayer room={room} viewport={viewport} />
+          <AnalysisLayer
+            issues={analysis.issues}
+            viewport={viewport}
+            focusedId={focusedIssueId}
+            selectedId={selectedId}
+            panelOpen={analysisOpen}
+          />
           {selected && (
             <SelectionOverlay
               item={selected}
@@ -139,6 +155,8 @@ export function PlanView() {
         onFit={fit}
         snap={settings.snapToGrid}
         onToggleSnap={() => updateSettings({ snapToGrid: !settings.snapToGrid })}
+        circulation={showCirculation}
+        onToggleCirculation={() => setShowCirculation(!showCirculation)}
       />
     </div>
   )

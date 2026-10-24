@@ -81,10 +81,17 @@ todos os móveis 3D serão geometria procedimental do Three.js.
   dariam um falso positivo).
 - **Limites da divisão:** os cantos rodados são comparados com as paredes e
   devolvemos quanto o móvel ultrapassa cada parede.
-- **Circulação (Fase 6):** distância mínima entre pegadas e entre pegadas e
-  paredes, comparada com `settings.circulationMin` (0,9 m por omissão,
-  configurável). É apresentada como *aviso*, distinto dos *erros*
-  geométricos, e como orientação, não como garantia de conformidade legal.
+- **Formas reais (Fase 6):** `shapes.js` descreve a pegada de cada tipo como
+  polígonos convexos no referencial local: retângulo, elipse (mesa redonda,
+  64 lados, erro < 1 mm) e L (sofá de canto, dois retângulos). O SAT corre
+  parte a parte, por isso continua exato e os cantos vazios deixam de dar
+  falsos conflitos.
+- **Distâncias e recortes:** `distance.js` mede a distância mínima entre
+  polígonos convexos (com a cota centrada no troço paralelo) e recorta a
+  zona exata de uma sobreposição ou da parte que sai pela parede
+  (Sutherland–Hodgman).
+- **Circulação (Fase 6):** ver secção 13. Avisos, distintos dos erros, e
+  orientações, não garantias de conformidade legal.
 
 ## 5. Modelo de dados (esquema v1)
 
@@ -173,7 +180,8 @@ spaceshift/
     │   ├── scene3d/            # ✓ SceneView (lazy, WebGL, erros), Scene3D, CameraRig,
     │   │                       #   Furniture3D, useItemDrag3D, models/ (peças e materiais),
     │   │                       #   room/ (paredes, corte, chão procedimental)
-    │   ├── analysis/           # Fase 6: painel de problemas e marcadores
+    │   ├── analysis/           # ✓ Fase 6: AnalysisPanel, IssueList, AnalysisLayer
+    │   │                       #   (marcadores SVG), markerPaths
     │   ├── projects/           # Fase 7: UI de gestão de projetos e disposições
     │   └── export/             # Fase 7: PNG, JSON, ficha de impressão
     ├── core/                   # JS puro, sem React, 100% testável
@@ -183,14 +191,16 @@ spaceshift/
     │   │   └── sceneMapping.js # planta ↔ Three.js                  ✓ Fase 1
     │   ├── geometry/           # vec2, ângulos, polígonos, pegadas,
     │   │   │                   # colisões SAT, snap                   ✓ Fase 1
-    │   │   └── clearance.js    # Fase 6: distâncias e circulação
+    │   │   ├── shapes.js       # ✓ Fase 6: formas reais (retângulo, elipse, L)
+    │   │   └── distance.js     # ✓ Fase 6: distâncias, recortes, interseções
     │   ├── model/              # tipos, constantes, fábricas, métricas,
     │   │                       # validação, migrações, (de)serialização ✓ Fase 1
     │   │                       # sanitize.js (alterações seguras)      ✓ Fase 2
     │   │                       # itemOps.js (operações sobre móveis)   ✓ Fase 3
     │   ├── editing/            # ✓ Fase 3: mover/rodar/redimensionar (snap pela
     │   │                       #   aresta, pegas com aresta oposta fixa), espaço livre
-    │   ├── analysis/           # Fase 6: analyzeLayout() → erros e avisos
+    │   ├── analysis/           # ✓ Fase 6: analyzeLayout() → erros e avisos,
+    │   │                       #   rules.js (limiares), circulation.js (grelha)
     │   └── history/            # Fase 7: pilha undo/redo com transações
     ├── data/catalog/           # ✓ dados puros: furniture.js (22 móveis), finishes.js
     ├── store/                  # ✓ Zustand
@@ -337,3 +347,55 @@ Os testes ficam ao lado do código que testam (`*.test.js`).
   chão) e grafo de cena com `@react-three/test-renderer` (meshes por peça,
   posição/rotação, seleção/conflito, cabo do candeeiro, arrasto com
   pré-visualização e gravação ao largar, corte de paredes por frame).
+
+## 13. Colisões e circulação (Fase 6)
+
+- **Uma análise, todas as vistas:** `core/analysis/analyzeLayout(room, items,
+  settings, { getProfile })` é pura e devolve `{ issues, errors, warnings,
+  itemStatus, circulation }`. Cada problema tem tipo, gravidade, título,
+  mensagem, sugestão, móveis envolvidos e um marcador em metros (`region`,
+  `gap` ou `zone`). `store/selectors.getLayoutAnalysis` memoriza o último
+  resultado ao nível do módulo e `useDisplayedItems` devolve a mesma lista
+  a todas as vistas, por isso a análise corre uma vez por alteração, também
+  durante um arrasto (4–7 ms com 12–40 móveis).
+- **Perfil de cada móvel:** o núcleo não conhece o catálogo. O catálogo dá
+  `footprint` (forma) e `role` (seat, coffee-table, chair, table, bed,
+  nightstand) e o store passa `getItemProfile` à análise.
+- **Erros (geometria impossível):**
+  - fora da divisão: quanto sai por cada parede e a zona exata que sai; se
+    o móvel não cabe de todo, diz a medida e sugere rodar 90° quando assim
+    cabe; senão propõe «Trazer para dentro» (deslocação mínima);
+  - sobreposição: forma real **e altura** (um candeeiro suspenso passa por
+    cima da mesa mas não do roupeiro); tapetes nunca colidem; cadeiras podem
+    entrar até 30 cm debaixo de mesas;
+  - mais alto do que o teto (altura ao chão + altura > pé-direito).
+- **Avisos (circulação):**
+  - passagem estreita: folga exata entre móveis e entre móvel e parede,
+    entre 10 cm (abaixo disso estão encostados) e a passagem mínima. Não
+    contam pares usados em conjunto (sofá e mesa de centro, cadeira e mesa,
+    cama e mesa de cabeceira), recantos sem saída (dois móveis encostados à
+    mesma parede, ou um móvel encostado a uma parede perpendicular), folgas
+    ocupadas por outro móvel, nem candeeiros e plantas;
+  - sem acesso: nenhuma zona livre de 60 cm (ou a passagem mínima, se for
+    menor) chega ao móvel; cadeiras e decoração ficam de fora;
+  - zona isolada: pelo menos 1 m² livre que não se liga ao resto com 60 cm;
+  - sem espaço para circular.
+- **Grelha de circulação:** células de 5 cm (maiores em divisões enormes,
+  até 40 000 células). Os móveis são rasterizados linha a linha e uma
+  transformada de distância euclidiana exata (Felzenszwalb–Huttenlocher)
+  dá a folga de cada célula; as paredes usam a distância exata. As zonas
+  ligadas dão o acesso e as zonas isoladas; a zona com a passagem mínima
+  é a que a planta mostra (botão de pegadas ou tecla C).
+- **Na interface:** a barra inferior mostra erros e avisos e abre o painel
+  de análise (coluna à direita da área central em ecrãs largos, cartão
+  flutuante em ecrãs médios, por baixo da vista no telemóvel; a planta
+  reenquadra-se para nada ficar tapado). O painel tem a passagem mínima editável, zona de circulação, listas
+  listas separadas de erros e avisos e a nota de que não é conformidade legal.
+  Clicar num problema seleciona o móvel e realça o marcador; os outros
+  esbatem. Na planta os erros veem-se sempre (tracejado vermelho na zona
+  exata); as cotas âmbar das passagens aparecem com o painel aberto ou para
+  o móvel selecionado, por isso surgem e mudam em tempo real durante um
+  arrasto. O contorno de cada móvel segue a forma real. O painel de
+  propriedades lista os problemas do móvel selecionado. Na cena 3D o chão
+  mostra as mesmas zonas e cotas, e o móvel em erro fica com contorno e
+  pegada vermelhos.

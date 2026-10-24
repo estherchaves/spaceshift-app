@@ -1,3 +1,5 @@
+import { CORNER_SOFA } from '@/core/geometry/shapes.js'
+
 /*
  * Modelos 3D procedimentais dos móveis, descritos como listas de peças.
  *
@@ -69,8 +71,8 @@ function sofaCorner(w, d, h) {
   const legH = Math.min(0.08, h * 0.1)
   const backD = Math.min(0.22, d * 0.14)
   const armW = Math.min(0.18, w * 0.07)
-  const chaiseW = w * 0.34
-  const mainD = d * 0.56
+  const chaiseW = w * CORNER_SOFA.chaiseRatio
+  const mainD = d * CORNER_SOFA.seatDepthRatio
   const baseTop = legH + h * 0.24
   const seatTop = h * 0.52
   const mainSeatW = w - armW - chaiseW

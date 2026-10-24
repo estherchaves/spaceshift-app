@@ -24,7 +24,7 @@ describe('EditorPage: estrutura', () => {
     expect(screen.getByRole('group', { name: /Planta da divisão: Sala de estar, 5,00 m por 4,00 m/ })).toBeInTheDocument()
     expect(statusBar().getByText('5,00 m × 4,00 m')).toBeInTheDocument()
     expect(statusBar().getByText('20,00 m²')).toBeInTheDocument()
-    expect(statusBar().getByText('Sem conflitos')).toBeInTheDocument()
+    expect(statusBar().getByText('Sem problemas')).toBeInTheDocument()
   })
 
   it('ações de fases seguintes estão desativadas e explicam porquê', () => {
@@ -196,7 +196,7 @@ describe('EditorPage: sincronização com o modelo', () => {
       })
     })
     expect(document.querySelectorAll('.plan-item')).toHaveLength(2)
-    expect(statusBar().getByText('1 conflito')).toBeInTheDocument()
+    expect(statusBar().getByText('1 erro')).toBeInTheDocument()
   })
 })
 

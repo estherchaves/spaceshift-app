@@ -97,6 +97,13 @@
   pointer-events: none;
 }
 
+/* Aviso de circulação: contorno âmbar tracejado, sem tapar o símbolo. */
+.plan-item[data-warning] .plan-item__outline {
+  stroke: var(--color-warning);
+  stroke-width: 1.75;
+  stroke-dasharray: 5 3;
+}
+
 /* Conflito: contorno vermelho por cima do símbolo e leve tom de alerta. */
 .plan-item[data-conflict] .plan-item__outline {
   fill: rgb(184 66 58 / 0.16);

@@ -9,6 +9,9 @@ import { create } from 'zustand'
  *    guarda a posição/rotação/dimensões provisórias; o documento só é
  *    alterado uma vez, no fim do gesto (uma única entrada no histórico).
  *  - catalogDragId: móvel do catálogo a ser arrastado para a planta
+ *  - analysisOpen: painel de análise (colisões e circulação) aberto
+ *  - showCirculation: mostrar a zona de circulação na planta
+ *  - focusedIssueId: problema realçado nas vistas (escolhido no painel)
  */
 const initialState = {
   viewMode: '2d',
@@ -16,16 +19,23 @@ const initialState = {
   selectedItemId: null,
   interaction: null,
   catalogDragId: null,
+  analysisOpen: false,
+  showCirculation: false,
+  focusedIssueId: null,
 }
 
 export const useEditorStore = create((set) => ({
   ...initialState,
   setViewMode: (viewMode) => set({ viewMode }),
   setMobilePanel: (mobilePanel) => set({ mobilePanel }),
-  selectItem: (selectedItemId) => set({ selectedItemId }),
+  // Mudar a seleção à mão deixa de realçar o problema escolhido no painel.
+  selectItem: (selectedItemId) => set({ selectedItemId, focusedIssueId: null }),
   /** @param {{type: 'move'|'rotate'|'resize'|'pan', itemId?: string, preview?: object}|null} interaction */
   setInteraction: (interaction) => set({ interaction }),
   setCatalogDrag: (catalogDragId) => set({ catalogDragId }),
+  setAnalysisOpen: (analysisOpen) => set(analysisOpen ? { analysisOpen } : { analysisOpen, focusedIssueId: null }),
+  setShowCirculation: (showCirculation) => set({ showCirculation }),
+  setFocusedIssue: (focusedIssueId) => set({ focusedIssueId }),
 }))
 
 export function resetEditorStore() {

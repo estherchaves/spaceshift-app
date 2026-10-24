@@ -58,20 +58,26 @@ describe('editorStore', () => {
 })
 
 describe('computeLayoutMetrics', () => {
-  const room = { width: 4, depth: 3 }
+  const room = { width: 4, depth: 3, wallHeight: 2.7 }
+  const settings = { circulationMin: 0.9 }
   const place = (id, x, z, rotation = 0) => createFurnitureItem(getCatalogEntry(id), { position: { x, z }, rotation })
 
-  it('sem móveis não há conflitos', () => {
-    expect(computeLayoutMetrics(room, [])).toMatchObject({ roomArea: 12, occupiedArea: 0, conflicts: 0 })
+  it('sem móveis não há problemas', () => {
+    expect(computeLayoutMetrics(room, [], settings)).toMatchObject({ roomArea: 12, occupiedArea: 0, errors: 0, warnings: 0 })
   })
 
-  it('conta móveis fora da divisão e sobreposições', () => {
+  it('conta móveis fora da divisão e sobreposições como erros', () => {
     const items = [place('sofa-3', 1.2, 0.5), place('armchair', 2.4, 0.5), place('plant', 3.9, 2.9)]
-    expect(computeLayoutMetrics(room, items)).toMatchObject({ outside: 1, overlaps: 1, conflicts: 2, itemCount: 3 })
+    expect(computeLayoutMetrics(room, items, settings)).toMatchObject({ errors: 2, itemCount: 3 })
   })
 
   it('tapetes e candeeiros suspensos não colidem com móveis', () => {
     const items = [place('rug', 2, 1.5), place('coffee-table', 2, 1.5), place('pendant-lamp', 2, 1.5)]
-    expect(computeLayoutMetrics(room, items).conflicts).toBe(0)
+    expect(computeLayoutMetrics(room, items, settings).errors).toBe(0)
+  })
+
+  it('a área ocupada usa a forma real (mesa redonda = π/4 do retângulo)', () => {
+    const table = place('round-table', 2, 1.5)
+    expect(computeLayoutMetrics(room, [table], settings).occupiedArea).toBeCloseTo((Math.PI / 4) * 1.1 * 1.1)
   })
 })

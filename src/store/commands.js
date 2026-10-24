@@ -73,3 +73,26 @@ export function toggleLockSelected() {
 export function clearSelection() {
   editor().selectItem(null)
 }
+
+/**
+ * Realça um problema da análise: seleciona o primeiro móvel envolvido e,
+ * em ecrãs pequenos, mostra a vista onde o marcador aparece.
+ */
+export function focusIssue(issue) {
+  if (issue.itemIds.length) editor().selectItem(issue.itemIds[0])
+  editor().setFocusedIssue(issue.id)
+  editor().setMobilePanel('plan')
+}
+
+/** Correção automática proposta pela análise (ex.: trazer um móvel para dentro). */
+export function applyIssueFix(issue) {
+  const fix = issue.fix
+  if (fix?.type !== 'bring-inside') return false
+  const item = findItem(project().project, fix.itemId)
+  if (!item || item.locked) return false
+  project().updateItem(item.id, {
+    position: { x: item.position.x + fix.delta.x, z: item.position.z + fix.delta.z },
+  })
+  editor().selectItem(item.id)
+  return true
+}

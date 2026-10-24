@@ -4,7 +4,9 @@ import { DEFAULT_SIZE_BOUNDS, FURNITURE_CATEGORIES, LIMITS } from '@/core/model'
 import { getCatalogEntry, getSizeBounds } from '@/data/catalog/furniture.js'
 import { FINISHES } from '@/data/catalog/finishes.js'
 import { deleteSelected, duplicateSelected, rotateSelected, toggleLockSelected } from '@/store/commands.js'
+import { IssueList } from '@/features/analysis/IssueList.jsx'
 import { useProjectStore } from '@/store/projectStore.js'
+import { useLayoutAnalysis } from '@/store/selectors.js'
 import { FinishPicker } from './FinishPicker.jsx'
 import './ItemInspector.css'
 
@@ -24,6 +26,8 @@ export function ItemInspector({ item }) {
   const locked = item.locked
   const finishes = entry?.finishes ?? []
   const elevated = (entry?.elevation ?? 0) > 0 || item.elevation > 0
+  const analysis = useLayoutAnalysis()
+  const issues = analysis.issues.filter((issue) => issue.itemIds.includes(item.id))
 
   return (
     <div className="item-inspector" data-locked={locked || undefined}>
@@ -42,6 +46,12 @@ export function ItemInspector({ item }) {
           </span>
         )}
       </div>
+
+      {issues.length > 0 && (
+        <PanelSection title="Problemas">
+          <IssueList issues={issues} compact lockedIds={locked ? new Set([item.id]) : undefined} />
+        </PanelSection>
+      )}
 
       <PanelSection title="Posição">
         <FieldGrid>

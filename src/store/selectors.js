@@ -1,14 +1,15 @@
 import { useMemo } from 'react'
-import { getActiveLayout, occupiedArea, roomArea } from '@/core/model'
-import { checkInsideRoom, itemsOverlap } from '@/core/geometry'
-import { isSolid } from '@/core/editing'
+import { analyzeLayout } from '@/core/analysis'
+import { shapeArea } from '@/core/geometry'
+import { getActiveLayout, roomArea } from '@/core/model'
+import { getItemProfile } from '@/data/catalog/furniture.js'
 import { useEditorStore } from './editorStore.js'
 import { useProjectStore } from './projectStore.js'
 
 /*
  * Seletores e derivações do estado. Com o Zustand v5 um seletor não pode
  * devolver um objeto novo a cada chamada, por isso as derivações
- * compostas (métricas) são funções puras usadas com useMemo.
+ * compostas (métricas, análise) são funções puras memorizadas.
  */
 
 export const selectProject = (state) => state.project
@@ -18,54 +19,65 @@ export const selectProjectName = (state) => state.project.name
 export const selectDirty = (state) => state.dirty
 export const selectActiveItems = (state) => getActiveLayout(state.project).items
 
-/**
- * Métricas para a barra inferior. A contagem de conflitos usa a geometria
- * real (SAT e cantos rodados); a análise completa, com circulação e
- * mensagens explicativas, chega na Fase 6.
- */
-export function computeLayoutMetrics(room, items) {
-  const conflictIds = new Set()
-  let outside = 0
-  for (const item of items) {
-    if (!checkInsideRoom(item, room).inside) {
-      outside++
-      conflictIds.add(item.id)
-    }
-  }
-  const solid = items.filter(isSolid)
-  let overlaps = 0
-  for (let i = 0; i < solid.length; i++) {
-    for (let j = i + 1; j < solid.length; j++) {
-      if (itemsOverlap(solid[i], solid[j]).overlapping) {
-        overlaps++
-        conflictIds.add(solid[i].id)
-        conflictIds.add(solid[j].id)
-      }
-    }
-  }
-  return {
-    roomArea: roomArea(room),
-    occupiedArea: occupiedArea(items),
-    itemCount: items.length,
-    outside,
-    overlaps,
-    conflicts: outside + overlaps,
-    conflictIds,
+/** Memoriza o último resultado de uma função pelos argumentos (por referência). */
+function memoizeLast(fn) {
+  let lastArgs = null
+  let lastResult
+  return (...args) => {
+    if (lastArgs && args.length === lastArgs.length && args.every((arg, i) => arg === lastArgs[i])) return lastResult
+    lastArgs = args
+    lastResult = fn(...args)
+    return lastResult
   }
 }
 
 /**
+ * Análise completa da disposição (colisões, passagens, acesso). É
+ * memorizada ao nível do módulo: a planta, a cena 3D, a barra inferior e
+ * o painel de análise recebem o mesmo resultado, calculado uma só vez por
+ * alteração (também durante um arrasto).
+ */
+export const getLayoutAnalysis = memoizeLast((room, items, settings) =>
+  analyzeLayout(room, items, settings, { getProfile: getItemProfile }),
+)
+
+/** Métricas para a barra inferior. */
+export function computeLayoutMetrics(room, items, settings) {
+  const analysis = getLayoutAnalysis(room, items, settings)
+  const occupied = items
+    .filter((item) => !item.elevation)
+    .reduce((sum, item) => sum + shapeArea(item.dimensions, getItemProfile(item).shape), 0)
+  return {
+    roomArea: roomArea(room),
+    occupiedArea: occupied,
+    itemCount: items.length,
+    errors: analysis.errors.length,
+    warnings: analysis.warnings.length,
+  }
+}
+
+const applyPreview = memoizeLast((items, interaction) => {
+  if (!interaction?.preview || !interaction.itemId) return items
+  return items.map((item) => (item.id === interaction.itemId ? { ...item, ...interaction.preview } : item))
+})
+
+/**
  * Móveis tal como devem ser mostrados: os do documento com a pré-visualização
  * do gesto em curso aplicada. A planta, a barra inferior e a cena
- * 3D usam esta lista, por isso todas as vistas mostram o mesmo estado.
+ * 3D usam esta lista (a mesma instância), por isso todas as vistas mostram
+ * o mesmo estado e a análise é calculada uma única vez.
  */
 export function useDisplayedItems() {
   const items = useProjectStore(selectActiveItems)
   const interaction = useEditorStore((state) => state.interaction)
-  return useMemo(() => {
-    if (!interaction?.preview || !interaction.itemId) return items
-    return items.map((item) => (item.id === interaction.itemId ? { ...item, ...interaction.preview } : item))
-  }, [items, interaction])
+  return applyPreview(items, interaction)
+}
+
+export function useLayoutAnalysis() {
+  const room = useProjectStore(selectRoom)
+  const settings = useProjectStore(selectSettings)
+  const items = useDisplayedItems()
+  return getLayoutAnalysis(room, items, settings)
 }
 
 export function useSelectedItem() {

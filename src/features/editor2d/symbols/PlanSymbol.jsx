@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { CORNER_SOFA } from '@/core/geometry/shapes.js'
 import './PlanSymbol.css'
 
 /*
@@ -56,8 +57,9 @@ function SofaCorner({ w, h }) {
   const T = -h / 2
   const back = Math.min(h * 0.16, w * 0.1)
   const arm = w * 0.06
-  const chaise = w * 0.34 // chaise longue do lado direito, com a profundidade toda
-  const seatDepth = h * 0.56
+  // Chaise longue do lado direito, com a largura toda (mesmas proporções das colisões).
+  const chaise = w * CORNER_SOFA.chaiseRatio
+  const seatDepth = h * CORNER_SOFA.seatDepthRatio
   const outline = `M${r(L)},${r(T)}H${r(L + w)}V${r(T + h)}H${r(L + w - chaise)}V${r(T + seatDepth)}H${r(L)}Z`
   const inner = `M${r(L + arm)},${r(T + back)}H${r(L + w - arm)}V${r(T + h)}H${r(L + w - chaise)}V${r(T + seatDepth)}H${r(L + arm)}Z`
   return (

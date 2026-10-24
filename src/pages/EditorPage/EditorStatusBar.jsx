@@ -1,4 +1,4 @@
-import { CircleAlert, CircleCheck } from 'lucide-react'
+import { CircleCheck, CircleX, TriangleAlert } from 'lucide-react'
 import { useMemo } from 'react'
 import { formatArea, formatLength } from '@/core/units/units.js'
 import { useEditorStore } from '@/store/editorStore.js'
@@ -14,7 +14,9 @@ export function EditorStatusBar() {
   const selected = useSelectedItem()
   const interaction = useEditorStore((state) => state.interaction)
   const settings = useProjectStore(selectSettings)
-  const metrics = useMemo(() => computeLayoutMetrics(room, items), [room, items])
+  const analysisOpen = useEditorStore((state) => state.analysisOpen)
+  const setAnalysisOpen = useEditorStore((state) => state.setAnalysisOpen)
+  const metrics = useMemo(() => computeLayoutMetrics(room, items, settings), [room, items, settings])
   const ratio = metrics.roomArea > 0 ? metrics.occupiedArea / metrics.roomArea : 0
 
   return (
@@ -30,16 +32,39 @@ export function EditorStatusBar() {
         <Metric label="Móveis" value={String(metrics.itemCount)} className="statusbar__optional" />
       </dl>
       <div className="statusbar__end">
-        <span className="statusbar__conflicts" data-state={metrics.conflicts > 0 ? 'error' : 'ok'}>
-          {metrics.conflicts > 0 ? (
-            <CircleAlert size={13} strokeWidth={2} aria-hidden="true" />
+        <button
+          type="button"
+          className="statusbar__analysis"
+          data-state={metrics.errors > 0 ? 'error' : metrics.warnings > 0 ? 'warning' : 'ok'}
+          aria-expanded={analysisOpen}
+          aria-label={`Análise: ${analysisLabel(metrics)}. ${analysisOpen ? 'Fechar' : 'Abrir'} painel de análise.`}
+          onClick={() => {
+            setAnalysisOpen(!analysisOpen)
+            useEditorStore.getState().setMobilePanel('plan')
+          }}
+        >
+          {metrics.errors === 0 && metrics.warnings === 0 ? (
+            <span className="statusbar__count" data-severity="ok">
+              <CircleCheck size={13} strokeWidth={2} aria-hidden="true" />
+              Sem problemas
+            </span>
           ) : (
-            <CircleCheck size={13} strokeWidth={2} aria-hidden="true" />
+            <>
+              {metrics.errors > 0 && (
+                <span className="statusbar__count" data-severity="error">
+                  <CircleX size={13} strokeWidth={2} aria-hidden="true" />
+                  {metrics.errors} {metrics.errors === 1 ? 'erro' : 'erros'}
+                </span>
+              )}
+              {metrics.warnings > 0 && (
+                <span className="statusbar__count" data-severity="warning">
+                  <TriangleAlert size={13} strokeWidth={2} aria-hidden="true" />
+                  {metrics.warnings} {metrics.warnings === 1 ? 'aviso' : 'avisos'}
+                </span>
+              )}
+            </>
           )}
-          {metrics.conflicts === 0
-            ? 'Sem conflitos'
-            : `${metrics.conflicts} ${metrics.conflicts === 1 ? 'conflito' : 'conflitos'}`}
-        </span>
+        </button>
         <span className="statusbar__optional statusbar__state" role="status">
           {editorState(interaction, selected)}
         </span>
@@ -49,6 +74,11 @@ export function EditorStatusBar() {
       </div>
     </footer>
   )
+}
+
+function analysisLabel({ errors, warnings }) {
+  if (!errors && !warnings) return 'sem problemas'
+  return `${errors} ${errors === 1 ? 'erro' : 'erros'} e ${warnings} ${warnings === 1 ? 'aviso' : 'avisos'}`
 }
 
 const INTERACTION_LABELS = {

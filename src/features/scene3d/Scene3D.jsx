@@ -1,10 +1,11 @@
 import { ContactShadows, Environment, Lightformer, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { PCFShadowMap } from 'three'
 import { useEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
-import { computeLayoutMetrics, selectRoom, useDisplayedItems } from '@/store/selectors.js'
+import { getLayoutAnalysis, selectRoom, selectSettings, useDisplayedItems } from '@/store/selectors.js'
+import { Analysis3D } from './Analysis3D.jsx'
 import { CameraRig } from './CameraRig.jsx'
 import { Furniture3D } from './Furniture3D.jsx'
 import { Room3D } from './room/Room3D.jsx'
@@ -24,7 +25,10 @@ export default function Scene3D() {
   const selectedId = useEditorStore((state) => state.selectedItemId)
   const selectItem = useEditorStore((state) => state.selectItem)
   const dragging = useEditorStore((state) => state.interaction?.type === 'move')
-  const { conflictIds } = useMemo(() => computeLayoutMetrics(room, items), [room, items])
+  const settings = useProjectStore(selectSettings)
+  const focusedIssueId = useEditorStore((state) => state.focusedIssueId)
+  const analysisOpen = useEditorStore((state) => state.analysisOpen)
+  const analysis = getLayoutAnalysis(room, items, settings)
   const [viewRequest, setViewRequest] = useState(null)
   const requestView = (view) => setViewRequest({ view })
 
@@ -76,10 +80,12 @@ export default function Scene3D() {
             key={item.id}
             item={item}
             selected={item.id === selectedId}
-            conflict={conflictIds.has(item.id)}
+            status={analysis.itemStatus.get(item.id)}
             ceilingHeight={room.wallHeight}
           />
         ))}
+
+        <Analysis3D issues={analysis.issues} focusedId={focusedIssueId} selectedId={selectedId} panelOpen={analysisOpen} />
 
         <ContactShadows
           position={[center[0], 0.002, center[2]]}

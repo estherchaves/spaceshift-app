@@ -86,7 +86,7 @@ describe('planta: seleção e movimento', () => {
   it('assinala móveis em conflito e atualiza a contagem em tempo real', () => {
     render(<EditorPage />)
     drag(screen.getByRole('button', { name: /^Sofá de 3 lugares,/ }), toPx(1.5, 1), toPx(-0.2, 1))
-    expect(statusBar().getByText('1 conflito')).toBeInTheDocument()
+    expect(statusBar().getByText('1 erro')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Sofá.*em conflito/ })).toBeInTheDocument()
     release(toPx(-0.2, 1))
   })

@@ -1,10 +1,10 @@
-import { Magnet, Maximize, Minus, Plus } from 'lucide-react'
+import { Footprints, Magnet, Maximize, Minus, Plus } from 'lucide-react'
 import { IconButton } from '@/components/ui'
 
 export const ZOOM_STEP = 1.25
 
-/** Controlos flutuantes da planta: zoom, enquadrar e snap. */
-export function ZoomControls({ zoomPercent, onZoomIn, onZoomOut, onFit, snap, onToggleSnap }) {
+/** Controlos flutuantes da planta: zoom, enquadrar, snap e zona de circulação. */
+export function ZoomControls({ zoomPercent, onZoomIn, onZoomOut, onFit, snap, onToggleSnap, circulation, onToggleCirculation }) {
   return (
     <div className="plan-toolbar" role="toolbar" aria-label="Vista da planta">
       <IconButton icon={Minus} label="Afastar" shortcut="−" size="sm" tooltipPlacement="top" onClick={onZoomOut} />
@@ -23,6 +23,17 @@ export function ZoomControls({ zoomPercent, onZoomIn, onZoomOut, onFit, snap, on
         aria-pressed={snap}
         className="plan-toolbar__snap"
         onClick={onToggleSnap}
+      />
+      <IconButton
+        icon={Footprints}
+        label={circulation ? 'Esconder zona de circulação' : 'Mostrar zona de circulação'}
+        shortcut="C"
+        size="sm"
+        tooltipPlacement="top"
+        tooltipAlign="end"
+        aria-pressed={circulation}
+        className="plan-toolbar__snap"
+        onClick={onToggleCirculation}
       />
     </div>
   )
