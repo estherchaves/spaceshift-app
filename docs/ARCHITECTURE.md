@@ -157,16 +157,21 @@ spaceshift/
 └── src/
     ├── main.jsx                # ponto de entrada (carrega Inter e estilos) ✓
     ├── app/
-    │   └── App.jsx             # raiz; na Fase 7 escolhe lista de projetos / editor ✓
+    │   ├── App.jsx             # raiz: lista de projetos ou editor, pela rota ✓ Fase 7
+    │   ├── router.js           # rotas por hash (#/ e #/projeto/<id>)        ✓ Fase 7
+    │   └── Toaster.jsx         # notificações breves                           ✓ Fase 7
     ├── pages/
-    │   ├── ProjectsPage/       # Fase 7: lista, criar, duplicar, renomear, eliminar
+    │   ├── ProjectsPage/       # ✓ Fase 7: lista, criar, duplicar, renomear, eliminar, importar
     │   └── EditorPage/         # ✓ Fase 2: EditorPage (composição), EditorTopBar,
     │                           #   EditorStatusBar, ProjectNameField
+    │                           #   ✓ Fase 7: EditorRoute (abrir/erro), useEditorPersistence,
+    │                           #   editorActions (voltar, exportar)
     ├── components/             # UI genérica, sem lógica de domínio      ✓ Fase 2
     │   ├── brand/Logo.jsx
     │   ├── ui/                 # Button, IconButton, Tooltip, NumberField, Select,
     │   │                       # Switch, SegmentedControl, ColorField, SearchField,
-    │   │                       # EmptyState, PanelSection/FieldGrid (Dialog na Fase 7)
+    │   │                       # EmptyState, PanelSection/FieldGrid
+    │   │                       # ✓ Fase 7: Dialog, ConfirmDialog, Menu, TextField
     │   └── layout/             # AppShell (grelha responsiva), SidePanel
     ├── features/               # módulos com UI + lógica de uma área do produto
     │   ├── editor2d/           # ✓ Fases 2–3: PlanView, PlanItem, SelectionOverlay,
@@ -182,8 +187,10 @@ spaceshift/
     │   │                       #   room/ (paredes, corte, chão procedimental)
     │   ├── analysis/           # ✓ Fase 6: AnalysisPanel, IssueList, AnalysisLayer
     │   │                       #   (marcadores SVG), markerPaths
-    │   ├── projects/           # Fase 7: UI de gestão de projetos e disposições
-    │   └── export/             # Fase 7: PNG, JSON, ficha de impressão
+    │   ├── projects/           # ✓ Fase 7: ProjectCard, NewProjectDialog, NameDialog,
+    │   │                       #   projectActions (fala com o repositório), useProjects
+    │   ├── layouts/            # ✓ Fase 7: LayoutBar (disposições), ComparisonView, compareLayouts
+    │   └── export/             # ✓ Fase 7: PlanSheet (folha SVG), exportImages (PNG planta e 3D)
     ├── core/                   # JS puro, sem React, 100% testável
     │   ├── units/units.js      # metros, mm, formatação pt-PT        ✓ Fase 1
     │   ├── coordinates/
@@ -201,20 +208,25 @@ spaceshift/
     │   │                       #   aresta, pegas com aresta oposta fixa), espaço livre
     │   ├── analysis/           # ✓ Fase 6: analyzeLayout() → erros e avisos,
     │   │                       #   rules.js (limiares), circulation.js (grelha)
-    │   └── history/            # Fase 7: pilha undo/redo com transações
+    │   ├── analysis/score.js   # ✓ Fase 7: pontuação de uma disposição e destaques
+    │   └── history/            # ✓ Fase 7: anular/refazer com instantâneos e nomes
     ├── data/catalog/           # ✓ dados puros: furniture.js (22 móveis), finishes.js
+    ├── data/examples/          # ✓ Fase 7: projeto de exemplo (sala com duas disposições)
     ├── store/                  # ✓ Zustand
     │   ├── projectStore.js     # documento + ações (divisão, definições, móveis)
     │   ├── editorStore.js      # estado efémero: vista, seleção, gesto em curso
     │   ├── commands.js         # ações do editor partilhadas por botões/atalhos/planta
+    │   ├── autosave.js         # ✓ Fase 7: gravação automática + saveNow()
+    │   ├── toastStore.js       # ✓ Fase 7: notificações
     │   └── selectors.js        # seletores, useDisplayedItems, computeLayoutMetrics
-    ├── services/               # Fase 7: fronteira com o exterior
+    ├── services/               # ✓ Fase 7: fronteira com o exterior
     │   ├── persistence/
     │   │   ├── ProjectRepository.js     # contrato (list, get, save, remove)
-    │   │   └── localStorageRepository.js
-    │   └── export/             # renderização PNG, download de ficheiros
+    │   │   ├── localStorageRepository.js
+    │   │   └── index.js                 # getRepository(): trocar aqui por uma API
+    │   └── export/             # download, ficheiro JSON, SVG → PNG
     ├── hooks/                  # ✓ useElementSize, useKeyboardShortcuts
-    ├── utils/                  # utilitários sem domínio (download, debounce)
+    ├── utils/                  # ✓ time.js (datas relativas), fileName.js (slug)
     ├── styles/
     │   ├── tokens.css          # cores, tipografia, espaçamentos      ✓ Fase 1
     │   └── base.css            # reset e base                         ✓ Fase 1
@@ -424,3 +436,58 @@ Ideias para diferenciar o SpaceShift, centradas em «cabe?» e «consigo passar?
     de bebé), com limites próprios;
   - criar um móvel colando as medidas de um produto de qualquer loja.
 - **Com backend (depois):** link só de leitura para partilhar uma disposição.
+
+## 15. Projetos, histórico, gravação, exportação e comparação (Fase 7)
+
+- **Rotas:** `#/` mostra a lista de projetos e `#/projeto/<id>` o editor.
+  Funciona em qualquer alojamento estático; recarregar reabre o mesmo
+  projeto e o botão Recuar volta à lista.
+- **Repositório:** o editor e a lista só falam com `getRepository()`
+  (contrato assíncrono `list/get/save/remove`). A implementação em
+  LocalStorage guarda cada projeto numa chave e um índice com resumos
+  (nome, medidas, contagens e os móveis da disposição ativa para a
+  miniatura), por isso a lista abre sem ler os projetos. Se o índice se
+  corromper é reconstruído; um projeto ilegível aparece como «danificado»
+  e pode ser eliminado; sem espaço há um erro explicado; sem LocalStorage
+  (modo privado) funciona em memória e a lista avisa. Para ligar um
+  backend basta outra implementação do mesmo contrato.
+- **Página de projetos:** criar (nome, tipo de divisão com medidas
+  habituais, medidas exatas, pré-visualização das proporções), abrir,
+  mudar o nome, duplicar («Sala (cópia)»), exportar JSON, importar
+  (um ficheiro com um id que já existe entra como cópia, nunca substitui),
+  eliminar com confirmação, procurar sem acentos e ordenar. Sem projetos,
+  propõe criar um ou abrir o exemplo.
+- **Anular/refazer:** `core/history` guarda instantâneos do documento
+  (imutável, por isso é barato) com o nome de cada alteração («Mover
+  Sofá de 3 lugares»), até 100 passos. Cada ação do store regista um
+  passo; os gestos na planta e no 3D só alteram o documento ao largar,
+  por isso um arrasto inteiro é um passo. O seletor de cor nativo junta-se
+  num passo (mesma chave em menos de 1 s). Trocar de disposição não é um
+  passo. Ctrl+Z, Ctrl+Shift+Z e Ctrl+Y; dentro de um campo de texto ficam
+  com o browser. Não se anula a meio de um gesto.
+- **Gravação:** automática 0,8 s depois da última alteração (várias
+  alterações dão uma escrita), já com Guardar ou Ctrl+S, ao voltar à lista
+  e quando a página é escondida ou fechada. O indicador mostra «Guardado
+  às 12:41», «Alterações por guardar», «A guardar…» ou «Erro ao guardar».
+  Há alterações por guardar quando o projeto atual não é o objeto gravado,
+  por isso anular até ao estado gravado volta a «Guardado».
+- **Exportar:** planta em PNG (folha 3200 × 2000 px com cotas, escala,
+  resumo, lista de móveis e zonas de erro; SVG autónomo com a Inter
+  embutida), vista 3D em PNG (fotograma da cena tal como está, quando a
+  vista 3D está aberta) e projeto completo em JSON. O módulo de imagens é
+  carregado só quando se exporta.
+- **Disposições:** separadores por cima da vista; nova disposição a partir
+  da atual (por omissão) ou vazia, mudar o nome, duplicar e eliminar com
+  confirmação (anulável). Máximo de 12.
+- **Comparação:** `core/analysis/score.js` dá a cada disposição 0–100:
+  espaço livre (30, de 30 % a 65 % do chão livre), circulação (40, área
+  onde se passa com a passagem mínima comparada com a divisão vazia,
+  cheia a 60 %) e problemas (30, menos 6 por aviso e 15 por erro; com erros
+  fica abaixo de 50). O custo total não entra: aparece ao lado. A vista
+  mostra os cartões lado a lado com a planta (zona de circulação e erros),
+  as parcelas, as métricas e destaques (melhor pontuação, mais espaço
+  livre, melhor circulação, mais barata) só quando há um vencedor claro.
+- **Correção:** a validação exigia 5 cm de altura a qualquer móvel e o
+  tapete tem 1 cm, por isso um projeto com tapete não voltava a abrir. A
+  altura passou a ter limite próprio (1 cm) e há um teste que guarda e
+  reabre todos os móveis do catálogo.

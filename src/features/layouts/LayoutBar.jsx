@@ -97,6 +97,7 @@ export function LayoutBar() {
         size="sm"
         icon={Columns3}
         className="layout-bar__compare"
+        aria-label="Comparar disposições"
         disabled={layouts.length < 2}
         disabledReason="Crie uma segunda disposição para comparar"
         tooltipAlign="end"
