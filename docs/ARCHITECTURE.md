@@ -190,7 +190,7 @@ spaceshift/
     │   ├── projects/           # ✓ Fase 7: ProjectCard, NewProjectDialog, NameDialog,
     │   │                       #   projectActions (fala com o repositório), useProjects
     │   ├── layouts/            # ✓ Fase 7: LayoutBar (disposições), ComparisonView, compareLayouts
-    │   └── export/             # ✓ Fase 7: PlanSheet (folha SVG), exportImages (PNG planta e 3D)
+    │   └── export/             # ✓ Fase 7: PlanSheet (folha SVG), exportImages (PNG planta e 3D); Fase 8: PrintSheet + printSheet (ficha A4)
     ├── core/                   # JS puro, sem React, 100% testável
     │   ├── units/units.js      # metros, mm, formatação pt-PT        ✓ Fase 1
     │   ├── coordinates/
@@ -225,7 +225,7 @@ spaceshift/
     │   │   ├── localStorageRepository.js
     │   │   └── index.js                 # getRepository(): trocar aqui por uma API
     │   └── export/             # download, ficheiro JSON, SVG → PNG
-    ├── hooks/                  # ✓ useElementSize, useKeyboardShortcuts
+    ├── hooks/                  # ✓ useElementSize, useKeyboardShortcuts, usePrefersReducedMotion
     ├── utils/                  # ✓ time.js (datas relativas), fileName.js (slug)
     ├── styles/
     │   ├── tokens.css          # cores, tipografia, espaçamentos      ✓ Fase 1
