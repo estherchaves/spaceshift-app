@@ -1,5 +1,5 @@
 /** Versão atual do esquema de projeto. Incrementar ⇒ adicionar migração. */
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
 
 export const PROJECT_FILE_FORMAT = 'spaceshift.project'
 
@@ -45,6 +45,7 @@ export const LIMITS = {
   circulationMin: { min: 0.3, max: 2 },
   projectName: { maxLength: 80 },
   layoutsPerProject: 12,
+  openingsPerRoom: 12,
 }
 
 export const DEFAULT_ROOM = {
@@ -56,6 +57,7 @@ export const DEFAULT_ROOM = {
   wallColor: '#f2f0eb',
   floorMaterial: 'oak',
   floorColor: FLOOR_MATERIALS.oak.color,
+  openings: [],
 }
 
 export const DEFAULT_SETTINGS = {
@@ -65,4 +67,6 @@ export const DEFAULT_SETTINGS = {
   // Orientação habitual para passagens em habitação (~0,9 m). É configurável
   // e apresentada como sugestão, não como requisito legal.
   circulationMin: 0.9,
+  // Perfil de acessibilidade: 'none' | 'wheelchair' | 'pram' (Fase 9).
+  accessibility: 'none',
 }

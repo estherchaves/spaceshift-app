@@ -1,5 +1,10 @@
-import { ColorField, FieldGrid, NumberField, PanelSection, Select, Switch } from '@/components/ui'
-import { FLOOR_MATERIALS, LIMITS, ROOM_TYPES } from '@/core/model'
+import { AppWindow, DoorOpen } from 'lucide-react'
+import { Button, ColorField, FieldGrid, NumberField, PanelSection, Select, Switch } from '@/components/ui'
+import { ACCESSIBILITY_PROFILES, FLOOR_MATERIALS, LIMITS, openingLabels, ROOM_TYPES, WALL_LABELS } from '@/core/model'
+import { formatCentimetres } from '@/core/units/units.js'
+import { addOpening } from '@/store/commands.js'
+import { useEditorStore } from '@/store/editorStore.js'
+import { notify } from '@/store/toastStore.js'
 import { selectRoom, selectSettings } from '@/store/selectors.js'
 import { useProjectStore } from '@/store/projectStore.js'
 import './RoomInspector.css'
@@ -16,6 +21,8 @@ const WALL_SWATCHES = [
   { value: '#d9c3b4', label: 'Terracota suave' },
   { value: '#4a4d52', label: 'Grafite' },
 ]
+
+const ACCESSIBILITY_OPTIONS = Object.entries(ACCESSIBILITY_PROFILES).map(([value, { label }]) => ({ value, label }))
 
 const FLOOR_SWATCHES = Object.values(FLOOR_MATERIALS).map(({ label, color }) => ({ value: color, label }))
 
@@ -77,6 +84,8 @@ export function RoomInspector() {
         </FieldGrid>
       </PanelSection>
 
+      <OpeningsSection room={room} />
+
       <PanelSection title="Acabamentos">
         <ColorField
           label="Cor das paredes"
@@ -128,7 +137,59 @@ export function RoomInspector() {
         <p className="room-inspector__note">
           Usada para avisos de circulação. É uma orientação de conforto, não uma garantia de conformidade legal.
         </p>
+        <Select
+          label="Acessibilidade"
+          value={settings.accessibility}
+          options={ACCESSIBILITY_OPTIONS}
+          onChange={(accessibility) => updateSettings({ accessibility })}
+        />
+        {ACCESSIBILITY_PROFILES[settings.accessibility]?.description && (
+          <p className="room-inspector__note">{ACCESSIBILITY_PROFILES[settings.accessibility].description}</p>
+        )}
       </PanelSection>
     </div>
+  )
+}
+
+function OpeningsSection({ room }) {
+  const openings = room.openings ?? []
+  const labels = openingLabels(openings)
+  const selectOpening = useEditorStore((state) => state.selectOpening)
+  const add = (type) => {
+    if (openings.length >= LIMITS.openingsPerRoom || !addOpening(type)) {
+      notify('Não há espaço livre nas paredes para mais uma abertura.', { tone: 'error' })
+    }
+  }
+  return (
+    <PanelSection title="Portas e janelas">
+      {openings.length > 0 ? (
+        <ul className="room-inspector__openings">
+          {openings.map((opening) => {
+            const Icon = opening.type === 'door' ? DoorOpen : AppWindow
+            return (
+              <li key={opening.id}>
+                <button type="button" className="room-inspector__opening" onClick={() => selectOpening(opening.id)}>
+                  <Icon size={15} strokeWidth={1.75} aria-hidden="true" />
+                  <span className="room-inspector__opening-name">{labels.get(opening.id)}</span>
+                  <span className="room-inspector__opening-meta">
+                    {formatCentimetres(opening.width)} · parede {WALL_LABELS[opening.wall]}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      ) : (
+        <p className="room-inspector__note">Acrescente a porta de entrada para a análise saber por onde se entra.</p>
+      )}
+      <FieldGrid>
+        <Button icon={DoorOpen} onClick={() => add('door')}>
+          Porta
+        </Button>
+        <Button icon={AppWindow} onClick={() => add('window')}>
+          Janela
+        </Button>
+      </FieldGrid>
+    </PanelSection>
   )
 }

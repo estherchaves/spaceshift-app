@@ -260,3 +260,48 @@
     border-radius: var(--radius-md);
   }
 }
+
+/* Portas e janelas: o vão recebe os cliques; a área da folha só se vê. */
+.plan-opening {
+  cursor: grab;
+  outline: none;
+}
+
+.plan-opening__swing {
+  pointer-events: none;
+}
+
+.plan-opening:hover .plan-opening__gap {
+  stroke: var(--color-accent);
+}
+
+.plan-opening[data-selected] .plan-opening__outline,
+.plan-opening:focus-visible .plan-opening__outline {
+  stroke: var(--color-accent);
+  stroke-width: 2.5;
+}
+
+.plan-opening[data-selected] .plan-opening__swing {
+  fill: rgb(162 124 79 / 0.12);
+}
+
+.plan-view[data-interaction='opening'] {
+  cursor: grabbing;
+}
+
+.plan-turning {
+  pointer-events: none;
+}
+
+.plan-turning circle {
+  fill: rgb(47 107 72 / 0.08);
+  stroke: var(--color-success);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+.plan-turning text {
+  fill: var(--color-success);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+}

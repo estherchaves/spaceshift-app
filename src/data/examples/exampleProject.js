@@ -1,4 +1,4 @@
-import { createFurnitureItem, createLayout, createProject } from '@/core/model'
+import { createFurnitureItem, createLayout, createOpening, createProject } from '@/core/model'
 import { getCatalogEntry } from '@/data/catalog/furniture.js'
 
 /*
@@ -18,6 +18,10 @@ export function createExampleProject() {
     roomType: 'living',
     room: { width: 5.2, depth: 4.2 },
   })
+  // Porta de entrada na parede de baixo, à direita do sofá, e janela à esquerda.
+  const door = createOpening(project.room, 'door', { wall: 'bottom', preferred: 4.15, hinge: 'end' })
+  const win = createOpening({ ...project.room, openings: [door] }, 'window', { wall: 'left', preferred: 2.4 })
+  project.room = { ...project.room, openings: [door, win] }
 
   const facingTv = createLayout('Sofá virado para a TV', [
     place('rug', 2.6, 2.55, 0, { dimensions: { width: 2.4, depth: 1.7, height: 0.01 } }),

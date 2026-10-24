@@ -1,7 +1,9 @@
 import { clipByHalfPlane, getItemShape, intersectConvex, polygonsDistance, polygonsOverlap, shapeBounds } from '../geometry/index.js'
 import { pointInPolygon } from '../geometry/polygon.js'
 import { formatCentimetres, formatLength } from '../units/units.js'
+import { getAccessibilityProfile } from '../model/accessibility.js'
 import { buildCirculationGrid, zoneReaches, zoneRuns } from './circulation.js'
+import { analyzeOpenings } from './openingRules.js'
 import { SINGLE_BED_MAX_WIDTH, USAGE_RULES, measureUsage } from './usage.js'
 import {
   ACCESS_WIDTH,
@@ -51,12 +53,15 @@ function wallsFor(room) {
 /**
  * @param {import('../model/types.js').Room} room
  * @param {import('../model/types.js').FurnitureItem[]} items
- * @param {{circulationMin: number}} settings
+ * @param {{circulationMin: number, accessibility?: string}} settings
  * @param {{getProfile?: (item) => ItemProfile}} [options]
  */
 export function analyzeLayout(room, items, settings, { getProfile = () => ({}) } = {}) {
-  const passage = settings.circulationMin
-  const access = Math.min(ACCESS_WIDTH, passage)
+  // Um perfil de acessibilidade aumenta as larguras: a cadeira de rodas
+  // precisa da passagem toda também para chegar a cada móvel.
+  const accessibility = getAccessibilityProfile(settings)
+  const passage = Math.max(settings.circulationMin, accessibility.passage ?? 0)
+  const access = accessibility.passage ? passage : Math.min(ACCESS_WIDTH, passage)
   const walls = wallsFor(room)
   const labels = itemLabels(items)
   const entries = items.map((item) => {
@@ -311,6 +316,10 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
     }
   }
 
+  // 6. Portas, janelas e acessibilidade.
+  const openingResult = analyzeOpenings(room, walkers, { grid, access, profile: accessibility })
+  issues.push(...openingResult.issues)
+
   const errors = issues.filter((issue) => issue.severity === 'error')
   const warnings = issues.filter((issue) => issue.severity === 'warning')
   // Estado de cada móvel nas vistas: erro em qualquer problema geométrico;
@@ -318,7 +327,7 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
   // estreitas são de dois móveis e mostram-se com a cota, não a contornar.
   const itemStatus = new Map()
   for (const issue of warnings) {
-    if (issue.type === 'access' || issue.type === 'usage') for (const id of issue.itemIds) itemStatus.set(id, 'warning')
+    if (issue.type === 'access' || issue.type === 'usage' || issue.type === 'window') for (const id of issue.itemIds) itemStatus.set(id, 'warning')
   }
   for (const issue of errors) for (const id of issue.itemIds) itemStatus.set(id, 'error')
 
@@ -334,6 +343,8 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
       passage,
       access,
     },
+    // Círculo livre para rodar (modo de acessibilidade), para desenhar.
+    turning: openingResult.turning,
   }
 }
 

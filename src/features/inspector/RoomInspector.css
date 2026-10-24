@@ -4,3 +4,45 @@
   line-height: 1.4;
   color: var(--color-text-subtle);
 }
+
+.room-inspector__openings {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.room-inspector__opening {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 36px;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text);
+  text-align: left;
+}
+
+.room-inspector__opening:hover {
+  background: var(--color-surface-sunken);
+}
+
+.room-inspector__opening svg {
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+.room-inspector__opening-name {
+  font-weight: var(--weight-medium);
+}
+
+.room-inspector__opening-meta {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}

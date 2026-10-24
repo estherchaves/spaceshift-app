@@ -28,6 +28,12 @@ export function addCatalogItem(catalogId, position) {
 }
 
 export function deleteSelected() {
+  const openingId = editor().selectedOpeningId
+  if (openingId) {
+    project().removeOpening(openingId)
+    editor().selectOpening(null)
+    return true
+  }
   const item = selectedItem()
   if (!item || item.locked) return false
   project().removeItem(item.id)
@@ -56,6 +62,7 @@ export function rotateSelected(direction = 1) {
  * snap); com `large` (Shift) dez vezes mais.
  */
 export function nudgeSelected(dx, dz, large = false) {
+  if (nudgeSelectedOpening(dx, dz, large)) return
   const item = selectedItem()
   if (!item || item.locked) return
   const { gridSize, snapToGrid } = project().project.settings
@@ -74,12 +81,36 @@ export function clearSelection() {
   editor().selectItem(null)
 }
 
+/** Acrescenta uma porta ou janela e seleciona-a. Devolve o id, ou null se as paredes estiverem cheias. */
+export function addOpening(type, options) {
+  const id = project().addOpening(type, options)
+  if (id) editor().selectOpening(id)
+  return id
+}
+
+/**
+ * Desloca a porta/janela selecionada ao longo da parede com as setas
+ * (setas no sentido da parede; as outras são ignoradas).
+ */
+export function nudgeSelectedOpening(dx, dz, large = false) {
+  const id = editor().selectedOpeningId
+  const opening = project().project.room.openings?.find((o) => o.id === id)
+  if (!opening) return false
+  const along = opening.wall === 'top' || opening.wall === 'bottom' ? dx : dz
+  if (!along) return true
+  const { gridSize, snapToGrid } = project().project.settings
+  const step = (snapToGrid ? gridSize : 0.01) * (large ? 10 : 1)
+  project().updateOpening(id, { offset: opening.offset + along * step })
+  return true
+}
+
 /**
  * Realça um problema da análise: seleciona o primeiro móvel envolvido e,
  * em ecrãs pequenos, mostra a vista onde o marcador aparece.
  */
 export function focusIssue(issue) {
   if (issue.itemIds.length) editor().selectItem(issue.itemIds[0])
+  else if (issue.openingIds?.length) editor().selectOpening(issue.openingIds[0])
   editor().setFocusedIssue(issue.id)
   editor().setMobilePanel('plan')
 }
@@ -101,6 +132,8 @@ export function applyIssueFix(issue) {
 function reconcileSelection() {
   const id = editor().selectedItemId
   if (id && !findItem(project().project, id)) editor().selectItem(null)
+  const openingId = editor().selectedOpeningId
+  if (openingId && !project().project.room.openings?.some((o) => o.id === openingId)) editor().selectOpening(null)
   editor().setFocusedIssue(null)
 }
 

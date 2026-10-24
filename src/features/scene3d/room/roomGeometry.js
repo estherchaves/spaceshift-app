@@ -24,6 +24,54 @@ export function wallSegments({ width, depth, wallHeight, wallThickness: t }) {
   ]
 }
 
+const WALL_OF_SIDE = { top: 'north', bottom: 'south', left: 'west', right: 'east' }
+
+/**
+ * Paredes partidas à volta das portas e janelas: troços inteiros entre
+ * aberturas, um troço por baixo de cada janela (até ao peitoril) e um por
+ * cima de cada abertura (até ao teto). Cada troço guarda a parede a que
+ * pertence (`wall`), a mesma normal e a altura da base (`base`).
+ */
+export function wallPieces(room) {
+  const { width, depth, wallHeight: H, wallThickness: t } = room
+  const openings = room.openings ?? []
+  const pieces = []
+  for (const wall of wallSegments(room)) {
+    const alongX = wall.id === 'north' || wall.id === 'south'
+    // Intervalo ao longo da parede: norte/sul incluem os cantos exteriores.
+    const [u0, u1] = alongX ? [-t, width + t] : [0, depth]
+    const fixed = alongX ? wall.position[2] : wall.position[0]
+    const holes = openings
+      .filter((o) => WALL_OF_SIDE[o.wall] === wall.id)
+      .map((o) => ({ from: o.offset - o.width / 2, to: o.offset + o.width / 2, sill: o.sill, top: o.sill + o.height }))
+      .sort((a, b) => a.from - b.from)
+    const box = (from, to, y0, y1, key) => {
+      const u = (from + to) / 2
+      const length = to - from
+      const height = y1 - y0
+      if (length <= 1e-6 || height <= 1e-6) return
+      pieces.push({
+        id: `${wall.id}:${key}`,
+        wall: wall.id,
+        base: y0,
+        position: alongX ? [u, y0 + height / 2, fixed] : [fixed, y0 + height / 2, u],
+        size: alongX ? [length, height, t] : [t, height, length],
+        normal: wall.normal,
+        inner: wall.inner,
+      })
+    }
+    let cursor = u0
+    holes.forEach((hole, i) => {
+      box(cursor, hole.from, 0, H, `s${i}`)
+      box(hole.from, hole.to, 0, hole.sill, `b${i}`)
+      box(hole.from, hole.to, Math.min(hole.top, H), H, `a${i}`)
+      cursor = hole.to
+    })
+    box(cursor, u1, 0, H, `s${holes.length}`)
+  }
+  return pieces
+}
+
 /**
  * Corte automático: uma parede fica baixa quando a câmara está do lado de
  * fora do seu plano, ou seja, quando taparia o interior. Visto de cima
@@ -43,8 +91,11 @@ export function cutawayWallIds(walls, [cx, , cz]) {
 /** Medidas de uma parede tal como é desenhada (inteira ou cortada). */
 export function displayedWall(wall, cut) {
   if (!cut) return wall
-  const height = Math.min(CUTAWAY_HEIGHT, wall.size[1])
-  return { ...wall, position: [wall.position[0], height / 2, wall.position[2]], size: [wall.size[0], height, wall.size[2]] }
+  const base = wall.base ?? 0
+  // Troços que começam acima do rodapé (por cima de portas e janelas) desaparecem.
+  if (base >= CUTAWAY_HEIGHT) return { ...wall, hidden: true }
+  const height = Math.min(CUTAWAY_HEIGHT - base, wall.size[1])
+  return { ...wall, position: [wall.position[0], base + height / 2, wall.position[2]], size: [wall.size[0], height, wall.size[2]] }
 }
 
 export function roomCenter({ width, depth }) {

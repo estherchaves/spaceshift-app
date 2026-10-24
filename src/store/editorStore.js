@@ -5,6 +5,7 @@ import { create } from 'zustand'
  *  - viewMode: vista da área central ('2d' | '3d' | 'split', planta e 3D lado a lado)
  *  - mobilePanel: painel visível em ecrãs estreitos ('catalog' | 'plan' | 'properties')
  *  - selectedItemId: móvel selecionado
+ *  - selectedOpeningId: porta ou janela selecionada (exclusiva com o móvel)
  *  - interaction: gesto em curso na planta. Durante o arrasto, `preview`
  *    guarda a posição/rotação/dimensões provisórias; o documento só é
  *    alterado uma vez, no fim do gesto (uma única entrada no histórico).
@@ -18,6 +19,7 @@ const initialState = {
   viewMode: '2d',
   mobilePanel: 'plan',
   selectedItemId: null,
+  selectedOpeningId: null,
   interaction: null,
   catalogDragId: null,
   analysisOpen: false,
@@ -31,7 +33,8 @@ export const useEditorStore = create((set) => ({
   setViewMode: (viewMode) => set({ viewMode }),
   setMobilePanel: (mobilePanel) => set({ mobilePanel }),
   // Mudar a seleção à mão deixa de realçar o problema escolhido no painel.
-  selectItem: (selectedItemId) => set({ selectedItemId, focusedIssueId: null }),
+  selectItem: (selectedItemId) => set({ selectedItemId, selectedOpeningId: null, focusedIssueId: null }),
+  selectOpening: (selectedOpeningId) => set({ selectedOpeningId, selectedItemId: null, focusedIssueId: null }),
   /** @param {{type: 'move'|'rotate'|'resize'|'pan', itemId?: string, preview?: object}|null} interaction */
   setInteraction: (interaction) => set({ interaction }),
   setCatalogDrag: (catalogDragId) => set({ catalogDragId }),

@@ -10,9 +10,10 @@ import { useElementSize } from '@/hooks/useElementSize.js'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.js'
 import { addCatalogItem } from '@/store/commands.js'
 import { useEditorStore } from '@/store/editorStore.js'
-import { getLayoutAnalysis, selectRoom, selectSettings, useDisplayedItems } from '@/store/selectors.js'
+import { getLayoutAnalysis, selectSettings, useDisplayedItems, useDisplayedRoom } from '@/store/selectors.js'
 import { useProjectStore } from '@/store/projectStore.js'
 import { DropGhost } from './DropGhost.jsx'
+import { OpeningsLayer } from './OpeningsLayer.jsx'
 import { PlanItem } from './PlanItem.jsx'
 import { gridLines, scaleBarLength, toScreen } from './planGeometry.js'
 import { SelectionOverlay } from './SelectionOverlay.jsx'
@@ -30,12 +31,14 @@ export const CATALOG_DRAG_TYPE = 'application/x-spaceshift-catalog'
 export function PlanView() {
   const [containerRef, size] = useElementSize()
   const svgRef = useRef(null)
-  const room = useProjectStore(selectRoom)
+  const room = useDisplayedRoom()
   const settings = useProjectStore(selectSettings)
   const updateSettings = useProjectStore((state) => state.updateSettings)
   const items = useDisplayedItems()
   const selectedId = useEditorStore((state) => state.selectedItemId)
   const selectItem = useEditorStore((state) => state.selectItem)
+  const selectedOpeningId = useEditorStore((state) => state.selectedOpeningId)
+  const selectOpening = useEditorStore((state) => state.selectOpening)
   const interaction = useEditorStore((state) => state.interaction)
   const catalogDragId = useEditorStore((state) => state.catalogDragId)
   const showCirculation = useEditorStore((state) => state.showCirculation)
@@ -121,6 +124,7 @@ export function PlanView() {
             ))}
           </g>
           <WallsLayer room={room} viewport={viewport} />
+          <OpeningsLayer room={room} viewport={viewport} selectedId={selectedOpeningId} onSelect={selectOpening} />
           <AnalysisLayer
             issues={analysis.issues}
             viewport={viewport}
@@ -128,6 +132,7 @@ export function PlanView() {
             selectedId={selectedId}
             panelOpen={analysisOpen}
           />
+          {analysis.turning && <TurningCircle turning={analysis.turning} viewport={viewport} />}
           {selected && (
             <SelectionOverlay
               item={selected}
@@ -197,6 +202,20 @@ function WallsLayer({ room, viewport }) {
       />
       <Dimension orientation="horizontal" from={inner.a.x} to={inner.b.x} at={outer.a.y - 22} label={formatLength(room.width)} name="Comprimento" />
       <Dimension orientation="vertical" from={inner.a.y} to={inner.b.y} at={outer.a.x - 22} label={formatLength(room.depth)} name="Largura" />
+    </g>
+  )
+}
+
+/** Círculo livre para rodar (modo de acessibilidade), onde a análise o encontrou. */
+function TurningCircle({ turning, viewport }) {
+  const c = toScreen(viewport, turning.centre.x, turning.centre.z)
+  const r = (turning.diameter / 2) * viewport.scale
+  return (
+    <g className="plan-turning" data-testid="turning-circle">
+      <circle cx={c.x} cy={c.y} r={r} />
+      <text x={c.x} y={c.y} textAnchor="middle" dy="0.35em">
+        {`Ø ${formatLength(turning.diameter)}`}
+      </text>
     </g>
   )
 }

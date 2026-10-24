@@ -2,9 +2,23 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { screenToWorld } from '@/core/coordinates/viewport.js'
 import { moveItem, resizeFromHandle, rotationFromPointer } from '@/core/editing'
 import { DEFAULT_SIZE_BOUNDS, findItem } from '@/core/model'
+import { snapToGrid } from '@/core/geometry/snap.js'
 import { getSizeBounds } from '@/data/catalog/furniture.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
+
+/**
+ * Parede mais próxima do ponteiro e posição ao longo dela. Com grelha, a
+ * aresta da abertura (não o centro) encaixa, como nos móveis.
+ */
+export function openingFromPointer(room, opening, world, gridSize = 0) {
+  const distances = { top: Math.abs(world.z), bottom: Math.abs(room.depth - world.z), left: Math.abs(world.x), right: Math.abs(room.width - world.x) }
+  const wall = Object.keys(distances).reduce((a, b) => (distances[b] < distances[a] ? b : a))
+  const along = wall === 'top' || wall === 'bottom' ? world.x : world.z
+  const half = opening.width / 2
+  const offset = gridSize ? snapToGrid(along - half, gridSize) + half : along
+  return { wall, offset }
+}
 
 const midpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 })
 
@@ -16,6 +30,8 @@ const PINCH_ZOOM_SPEED = 0.01
 /**
  * Gestos do rato/toque sobre a planta:
  *  - clicar num móvel seleciona-o; arrastar move-o (Alt desliga o snap);
+ *  - clicar numa porta/janela seleciona-a; arrastar desliza-a pela parede
+ *    mais próxima do ponteiro (pode mudar de parede);
  *  - pegas: rodar (Shift = rotação livre) e redimensionar;
  *  - arrastar o fundo, botão do meio ou Espaço + arrastar desloca a vista;
  *  - clicar no fundo sem arrastar limpa a seleção;
@@ -86,12 +102,17 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
       }
     }
     const world = screenToWorld(viewportRef.current, screen)
-    const target = e.target instanceof Element ? e.target.closest('[data-handle], [data-item-id]') : null
+    const target = e.target instanceof Element ? e.target.closest('[data-handle], [data-item-id], [data-opening-id]') : null
     const { project } = useProjectStore.getState()
     const editor = useEditorStore.getState()
 
     if (e.button === 1 || spaceDown.current || !target) {
       gesture.current = { type: 'pan', start: screen, last: screen, moved: false }
+    } else if (target.dataset.openingId) {
+      const opening = project.room.openings?.find((o) => o.id === target.dataset.openingId)
+      if (!opening) return
+      editor.selectOpening(opening.id)
+      gesture.current = { type: 'opening', opening, start: screen, moved: false }
     } else if (target.dataset.handle) {
       const item = findItem(project, editor.selectedItemId)
       if (!item || item.locked) return
@@ -114,7 +135,7 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
     // passamos o foco ao móvel clicado (para o teclado atuar nele) ou largamos
     // o foco de botões/campos quando se clica no fundo.
     e.preventDefault()
-    const focusTarget = target?.closest('[data-item-id]')
+    const focusTarget = target?.closest('[data-item-id], [data-opening-id]')
     if (focusTarget) focusTarget.focus({ preventScroll: true })
     else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur?.()
     svgRef.current.setPointerCapture?.(e.pointerId)
@@ -159,8 +180,12 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
     }
 
     const world = screenToWorld(viewportRef.current, screen)
-    const { settings } = useProjectStore.getState().project
+    const { settings, room } = useProjectStore.getState().project
     const snap = settings.snapToGrid && !e.altKey
+    if (g.type === 'opening') {
+      editor.setInteraction({ type: 'opening', openingId: g.opening.id, preview: openingFromPointer(room, g.opening, world, snap ? settings.gridSize : 0) })
+      return
+    }
     let preview
     if (g.type === 'move') {
       const delta = { x: world.x - g.startWorld.x, z: world.z - g.startWorld.z }
@@ -187,7 +212,10 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
       editor.setInteraction(null)
       return
     }
-    if (commit) {
+    if (commit && g.type === 'opening') {
+      const preview = editor.interaction?.openingId === g.opening.id ? editor.interaction.preview : null
+      if (preview) useProjectStore.getState().updateOpening(g.opening.id, preview)
+    } else if (commit) {
       if (g.type === 'pan' && !g.moved) editor.selectItem(null)
       const preview = editor.interaction?.itemId === g.item?.id ? editor.interaction?.preview : null
       if (preview) useProjectStore.getState().updateItem(g.item.id, preview)

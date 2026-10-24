@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { analyzeLayout, blockedFloorArea } from '@/core/analysis'
-import { getActiveLayout, roomArea } from '@/core/model'
+import { applyOpeningPatch, getActiveLayout, roomArea } from '@/core/model'
 import { getItemProfile } from '@/data/catalog/furniture.js'
 import { useEditorStore } from './editorStore.js'
 import { useProjectStore } from './projectStore.js'
@@ -70,8 +70,21 @@ export function useDisplayedItems() {
   return applyPreview(items, interaction)
 }
 
-export function useLayoutAnalysis() {
+const applyRoomPreview = memoizeLast((room, interaction) => {
+  if (!interaction?.preview || !interaction.openingId) return room
+  const openings = (room.openings ?? []).map((o) => (o.id === interaction.openingId ? applyOpeningPatch(room, o, interaction.preview) : o))
+  return { ...room, openings }
+})
+
+/** A divisão tal como deve ser mostrada: com a porta/janela a ser arrastada no sítio provisório. */
+export function useDisplayedRoom() {
   const room = useProjectStore(selectRoom)
+  const interaction = useEditorStore((state) => state.interaction)
+  return applyRoomPreview(room, interaction)
+}
+
+export function useLayoutAnalysis() {
+  const room = useDisplayedRoom()
   const settings = useProjectStore(selectSettings)
   const items = useDisplayedItems()
   return getLayoutAnalysis(room, items, settings)
@@ -81,4 +94,10 @@ export function useSelectedItem() {
   const selectedId = useEditorStore((state) => state.selectedItemId)
   const items = useDisplayedItems()
   return useMemo(() => items.find((item) => item.id === selectedId) ?? null, [items, selectedId])
+}
+
+export function useSelectedOpening() {
+  const selectedId = useEditorStore((state) => state.selectedOpeningId)
+  const room = useDisplayedRoom()
+  return useMemo(() => room.openings?.find((o) => o.id === selectedId) ?? null, [room, selectedId])
 }

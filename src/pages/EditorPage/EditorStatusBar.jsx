@@ -2,14 +2,14 @@ import { CircleCheck, CircleX, TriangleAlert } from 'lucide-react'
 import { useMemo } from 'react'
 import { formatArea, formatLength } from '@/core/units/units.js'
 import { useEditorStore } from '@/store/editorStore.js'
-import { computeLayoutMetrics, selectRoom, selectSettings, useDisplayedItems, useSelectedItem } from '@/store/selectors.js'
+import { computeLayoutMetrics, selectSettings, useDisplayedItems, useDisplayedRoom, useSelectedItem } from '@/store/selectors.js'
 import { useProjectStore } from '@/store/projectStore.js'
 import './EditorStatusBar.css'
 
 const percent = new Intl.NumberFormat('pt-PT', { style: 'percent', maximumFractionDigits: 0 })
 
 export function EditorStatusBar() {
-  const room = useProjectStore(selectRoom)
+  const room = useDisplayedRoom()
   const items = useDisplayedItems()
   const selected = useSelectedItem()
   const interaction = useEditorStore((state) => state.interaction)

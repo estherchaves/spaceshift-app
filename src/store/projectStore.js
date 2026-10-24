@@ -2,14 +2,19 @@ import { create } from 'zustand'
 import {
   addItem,
   addLayout,
+  applyOpeningPatch,
   applyRoomPatch,
   applySettingsPatch,
   createFurnitureItem,
+  createOpening,
   createProject,
   DEFAULT_SIZE_BOUNDS,
   duplicateItem,
   findItem,
   getActiveLayout,
+  LIMITS,
+  OPENING_TYPES,
+  openingLabels,
   removeItem,
   removeLayout,
   renameLayout,
@@ -124,13 +129,51 @@ export const useProjectStore = create((set, get) => {
         },
       ),
 
+    /**
+     * Acrescenta uma porta ou janela à divisão (todas as disposições).
+     * Devolve o id, ou null se não houver espaço livre nas paredes.
+     */
+    addOpening: (type, options = {}) => {
+      const { room } = get().project
+      if ((room.openings?.length ?? 0) >= LIMITS.openingsPerRoom) return null
+      const opening = createOpening(room, type, options)
+      if (!opening) return null
+      change((project) => ({ ...project, room: { ...project.room, openings: [...(project.room.openings ?? []), opening] } }), {
+        label: `Acrescentar ${OPENING_TYPES[opening.type].label.toLowerCase()}`,
+      })
+      return opening.id
+    },
+
+    updateOpening: (id, patch, { label } = {}) =>
+      change(
+        (project) => {
+          const openings = project.room.openings ?? []
+          const index = openings.findIndex((o) => o.id === id)
+          if (index === -1) return project
+          const next = applyOpeningPatch(project.room, openings[index], patch)
+          if (Object.keys(next).every((key) => next[key] === openings[index][key])) return project
+          return { ...project, room: { ...project.room, openings: openings.with(index, next) } }
+        },
+        { label: label ?? `${'offset' in patch || 'wall' in patch ? 'Mover' : 'Alterar'} ${openingLabels(get().project.room.openings ?? []).get(id)?.toLowerCase() ?? 'abertura'}` },
+      ),
+
+    removeOpening: (id) =>
+      change(
+        (project) => {
+          const openings = project.room.openings ?? []
+          if (!openings.some((o) => o.id === id)) return project
+          return { ...project, room: { ...project.room, openings: openings.filter((o) => o.id !== id) } }
+        },
+        { label: `Eliminar ${openingLabels(get().project.room.openings ?? []).get(id)?.toLowerCase() ?? 'abertura'}` },
+      ),
+
     updateSettings: (patch) =>
       change(
         (project) => {
           const settings = applySettingsPatch(project.settings, patch)
           return shallowEqual(settings, project.settings) ? project : { ...project, settings }
         },
-        { label: 'circulationMin' in patch ? 'Mudar a passagem mínima' : 'Mudar as definições da planta' },
+        { label: 'circulationMin' in patch ? 'Mudar a passagem mínima' : 'accessibility' in patch ? 'Mudar o modo de acessibilidade' : 'Mudar as definições da planta' },
       ),
 
     /**

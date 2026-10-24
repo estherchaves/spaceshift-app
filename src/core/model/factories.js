@@ -13,6 +13,7 @@ export function createRoom(overrides = {}) {
     width: preset.width,
     depth: preset.depth,
     ...overrides,
+    openings: overrides.openings ? [...overrides.openings] : [],
     type,
   }
 }

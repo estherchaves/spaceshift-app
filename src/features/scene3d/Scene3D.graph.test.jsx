@@ -1,6 +1,6 @@
 import ReactThreeTestRenderer from '@react-three/test-renderer'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createFurnitureItem, createRoom, findItem } from '@/core/model'
+import { createFurnitureItem, createOpening, createRoom, findItem } from '@/core/model'
 import { getCatalogEntry } from '@/data/catalog/furniture.js'
 import { resetEditorStore, useEditorStore } from '@/store/editorStore.js'
 import { resetProjectStore, useProjectStore } from '@/store/projectStore.js'
@@ -151,11 +151,25 @@ describe('Room3D', () => {
     const room = createRoom({ width: 4, depth: 3 })
     const renderer = await ReactThreeTestRenderer.create(<Room3D room={room} />, { camera: { position: [10, 5, -4] } })
     await renderer.advanceFrames(1, 0.016)
-    const wall = (id) => renderer.scene.find((n) => n.instance.name === `wall:${id}`).instance
+    const wall = (id) => renderer.scene.find((n) => n.instance.name === `wall:${id}:s0`).instance
     expect(wall('east').userData.cut).toBe(true)
     expect(wall('north').userData.cut).toBe(true)
     expect(wall('north').scale.y).toBeLessThan(0.2)
     expect(wall('south').userData.cut).toBe(false)
     expect(wall('west').scale.y).toBe(room.wallHeight)
+  })
+
+  it('abre vãos para portas e janelas e mostra a folha da porta e o vidro', async () => {
+    const base = createRoom({ width: 4, depth: 3 })
+    const door = createOpening(base, 'door', { wall: 'bottom' })
+    const win = createOpening({ ...base, openings: [door] }, 'window', { wall: 'left' })
+    const room = { ...base, openings: [door, win] }
+    const renderer = await ReactThreeTestRenderer.create(<Room3D room={room} />)
+    const names = meshes(renderer).map((m) => m.instance.name)
+    // Sul: dois troços inteiros + um por cima da porta; oeste: dois troços + baixo + cima da janela.
+    expect(names.filter((n) => n.startsWith('wall:south'))).toHaveLength(3)
+    expect(names.filter((n) => n.startsWith('wall:west'))).toHaveLength(4)
+    expect(names).toContain(`door:${door.id}`)
+    expect(names).toContain(`window:${win.id}`)
   })
 })

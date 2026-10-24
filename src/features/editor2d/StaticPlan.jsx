@@ -1,6 +1,7 @@
 import { fitRect, worldToScreen } from '@/core/coordinates/viewport.js'
 import { getCatalogEntry } from '@/data/catalog/furniture.js'
 import { polygonsPath } from '@/features/analysis/markerPaths.js'
+import { OpeningsLayer } from './OpeningsLayer.jsx'
 import { PlanSymbol } from './symbols/PlanSymbol.jsx'
 
 /*
@@ -105,6 +106,7 @@ export function StaticPlan({
         fillRule="evenodd"
         d={`M${oa.x},${oa.y}H${ob.x}V${ob.y}H${oa.x}Z M${a.x},${a.y}V${b.y}H${b.x}V${a.y}Z`}
       />
+      <OpeningsLayer room={room} viewport={viewport} />
       {typeof children === 'function' ? children(viewport) : children}
     </svg>
   )

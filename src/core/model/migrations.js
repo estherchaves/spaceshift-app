@@ -5,9 +5,16 @@ import { SCHEMA_VERSION } from './constants.js'
  * projeto na versão seguinte. Ao criar o esquema v2, adiciona-se
  * `1: (p) => ({ ...p, schemaVersion: 2, ...novosCampos })`.
  *
- * A v1 é a primeira versão pública, por isso ainda não há migrações.
+ * v1 → v2 (Fase 9): portas e janelas na divisão e perfil de acessibilidade.
  */
-export const MIGRATIONS = {}
+export const MIGRATIONS = {
+  1: (p) => ({
+    ...p,
+    schemaVersion: 2,
+    room: p.room && typeof p.room === 'object' ? { ...p.room, openings: [] } : p.room,
+    settings: p.settings && typeof p.settings === 'object' ? { accessibility: 'none', ...p.settings } : p.settings,
+  }),
+}
 
 /**
  * Leva um projeto de qualquer versão conhecida até `targetVersion`.

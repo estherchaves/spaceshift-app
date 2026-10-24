@@ -5,6 +5,8 @@ import {
   ROOM_TYPES,
   SCHEMA_VERSION,
 } from './constants.js'
+import { ACCESSIBILITY_PROFILES } from './accessibility.js'
+import { OPENING_LIMITS, OPENING_TYPES, WALL_SIDES, wallFrame } from './openings.js'
 
 /**
  * Validação estrutural de um projeto. Não lança exceções: devolve a lista
@@ -65,6 +67,35 @@ function validateRoom(room, fail) {
   if (!isHexColor(room.wallColor)) fail('room.wallColor', 'Cor das paredes inválida.')
   if (!(room.floorMaterial in FLOOR_MATERIALS)) fail('room.floorMaterial', 'Material do chão desconhecido.')
   if (!isHexColor(room.floorColor)) fail('room.floorColor', 'Cor do chão inválida.')
+  if (!Array.isArray(room.openings)) return fail('room.openings', 'Lista de portas e janelas inválida.')
+  if (room.openings.length > LIMITS.openingsPerRoom)
+    fail('room.openings', `Máximo de ${LIMITS.openingsPerRoom} portas e janelas por divisão.`)
+  const ids = new Set()
+  room.openings.forEach((opening, i) => {
+    const path = `room.openings[${i}]`
+    validateOpening(opening, room, path, fail)
+    if (isObject(opening)) {
+      if (ids.has(opening.id)) fail(`${path}.id`, 'Identificador de abertura repetido.')
+      ids.add(opening.id)
+    }
+  })
+}
+
+function validateOpening(opening, room, path, fail) {
+  if (!isObject(opening)) return fail(path, 'Porta ou janela inválida.')
+  if (!isNonEmptyString(opening.id)) fail(`${path}.id`, 'Falta o identificador da abertura.')
+  if (!(opening.type in OPENING_TYPES)) fail(`${path}.type`, 'Tipo de abertura desconhecido.')
+  if (!WALL_SIDES.includes(opening.wall)) return fail(`${path}.wall`, 'Parede desconhecida.')
+  checkRange(opening.width, OPENING_LIMITS.width, `${path}.width`, 'Largura da abertura', fail)
+  checkRange(opening.height, OPENING_LIMITS.height, `${path}.height`, 'Altura da abertura', fail)
+  checkRange(opening.sill, OPENING_LIMITS.sill, `${path}.sill`, 'Altura do peitoril', fail)
+  const length = isFiniteNumber(room.width) && isFiniteNumber(room.depth) ? wallFrame(room, opening.wall).length : Infinity
+  if (!isFiniteNumber(opening.offset) || opening.offset < 0 || opening.offset > length)
+    fail(`${path}.offset`, 'A posição da abertura está fora da parede.')
+  if (opening.type === 'door') {
+    if (opening.hinge !== 'start' && opening.hinge !== 'end') fail(`${path}.hinge`, 'Lado da dobradiça inválido.')
+    if (opening.swing !== 'in' && opening.swing !== 'out') fail(`${path}.swing`, 'Sentido de abertura inválido.')
+  }
 }
 
 function validateSettings(settings, fail) {
@@ -74,6 +105,7 @@ function validateSettings(settings, fail) {
   if (!isFiniteNumber(settings.rotationStep) || settings.rotationStep <= 0 || settings.rotationStep > 90)
     fail('settings.rotationStep', 'O passo de rotação tem de estar entre 1° e 90°.')
   checkRange(settings.circulationMin, LIMITS.circulationMin, 'settings.circulationMin', 'Circulação mínima', fail)
+  if (!(settings.accessibility in ACCESSIBILITY_PROFILES)) fail('settings.accessibility', 'Perfil de acessibilidade desconhecido.')
 }
 
 function validateLayout(layout, path, fail) {

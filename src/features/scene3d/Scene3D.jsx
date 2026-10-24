@@ -5,7 +5,7 @@ import { PCFShadowMap } from 'three'
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
-import { getLayoutAnalysis, selectRoom, selectSettings, useDisplayedItems } from '@/store/selectors.js'
+import { getLayoutAnalysis, selectSettings, useDisplayedItems, useDisplayedRoom } from '@/store/selectors.js'
 import { Analysis3D } from './Analysis3D.jsx'
 import { CameraRig } from './CameraRig.jsx'
 import { CaptureBridge } from './CaptureBridge.jsx'
@@ -22,7 +22,7 @@ import './Scene3D.css'
  * Carregada em diferido (React.lazy) para o Three.js não pesar no 2D.
  */
 export default function Scene3D() {
-  const room = useProjectStore(selectRoom)
+  const room = useDisplayedRoom()
   const reducedMotion = usePrefersReducedMotion()
   const items = useDisplayedItems()
   const selectedId = useEditorStore((state) => state.selectedItemId)
