@@ -3,7 +3,7 @@ import { screenToWorld } from '@/core/coordinates/viewport.js'
 import { moveItem, resizeFromHandle, rotationFromPointer } from '@/core/editing'
 import { DEFAULT_SIZE_BOUNDS, findItem } from '@/core/model'
 import { snapToGrid } from '@/core/geometry/snap.js'
-import { getSizeBounds } from '@/data/catalog/furniture.js'
+import { getItemSizeBounds } from '@/data/catalog/furniture.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
 
@@ -197,7 +197,7 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
     } else if (g.type === 'rotate') {
       preview = { rotation: rotationFromPointer(g.item.position, world, { step: settings.rotationStep, free: e.shiftKey }) }
     } else if (g.type === 'resize') {
-      const bounds = getSizeBounds(g.item.catalogId, DEFAULT_SIZE_BOUNDS)
+      const bounds = getItemSizeBounds(g.item, DEFAULT_SIZE_BOUNDS)
       preview = resizeFromHandle(g.item, g.handle, world, { bounds, gridSize: settings.gridSize, snap })
     }
     editor.setInteraction({ type: g.type, itemId: g.item.id, preview })

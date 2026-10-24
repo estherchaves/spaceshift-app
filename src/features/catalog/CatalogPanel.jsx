@@ -1,4 +1,4 @@
-import { SearchX } from 'lucide-react'
+import { ClipboardPaste, SearchX } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { SidePanel } from '@/components/layout'
 import { Button, EmptyState, SearchField } from '@/components/ui'
@@ -7,6 +7,7 @@ import { CatalogCard } from './CatalogCard.jsx'
 import { CATEGORY_ICONS } from './categoryIcons.js'
 import { FURNITURE_CATALOG } from '@/data/catalog/furniture.js'
 import { filterCatalog } from './filterCatalog.js'
+import { PasteProductDialog } from './PasteProductDialog.jsx'
 import './CatalogPanel.css'
 
 const CATEGORY_FILTERS = [
@@ -17,6 +18,7 @@ const CATEGORY_FILTERS = [
 export function CatalogPanel() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
+  const [pasteOpen, setPasteOpen] = useState(false)
   const results = useMemo(
     () => filterCatalog(FURNITURE_CATALOG, { query, category, categories: FURNITURE_CATEGORIES }),
     [query, category],
@@ -31,6 +33,9 @@ export function CatalogPanel() {
       toolbar={
         <>
           <SearchField label="Pesquisar móveis" placeholder="Pesquisar móveis" value={query} onChange={setQuery} />
+          <Button size="sm" icon={ClipboardPaste} className="catalog-paste" onClick={() => setPasteOpen(true)}>
+            Medidas de uma loja
+          </Button>
           <div className="category-filters" role="group" aria-label="Filtrar por categoria">
             {CATEGORY_FILTERS.map((filter) => {
               const Icon = CATEGORY_ICONS[filter.value]
@@ -51,6 +56,7 @@ export function CatalogPanel() {
         </>
       }
     >
+      {pasteOpen && <PasteProductDialog open onClose={() => setPasteOpen(false)} />}
       <p className="visually-hidden" role="status">
         {resultsLabel}
       </p>

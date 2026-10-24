@@ -333,6 +333,32 @@ export function getSizeBounds(catalogId, fallback) {
   return entry.resizable ?? { min: entry.dimensions, max: entry.dimensions }
 }
 
+/**
+ * Limites de um móvel concreto: os do modelo, salvo se as medidas vieram
+ * de uma loja (`customSize`), que podem ser quaisquer (dentro de `fallback`).
+ */
+export function getItemSizeBounds(item, fallback) {
+  return item.customSize ? fallback : getSizeBounds(item.catalogId, fallback)
+}
+
+/**
+ * Modelo do catálogo com as medidas mais parecidas (razões em escala
+ * logarítmica, para 10 cm pesarem mais num banco do que num roupeiro).
+ */
+export function closestCatalogEntry(dimensions) {
+  const keys = ['width', 'depth', 'height'].filter((k) => dimensions[k] > 0)
+  let best = null
+  let bestScore = Infinity
+  for (const entry of FURNITURE_CATALOG) {
+    const score = keys.reduce((sum, k) => sum + Math.abs(Math.log(dimensions[k] / entry.dimensions[k])), 0)
+    if (score < bestScore) {
+      best = entry
+      bestScore = score
+    }
+  }
+  return best
+}
+
 const DEFAULT_PROFILE = { shape: 'rect', role: null, usage: null }
 const PROFILES = new Map(
   FURNITURE_CATALOG.map((entry) => [entry.id, { shape: entry.footprint ?? 'rect', role: entry.role ?? null, usage: entry.usage ?? null }]),

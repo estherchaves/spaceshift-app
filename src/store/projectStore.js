@@ -27,7 +27,7 @@ import {
 } from '@/core/model'
 import { findFreePosition, snapItemPosition } from '@/core/editing'
 import { createHistory, recordChange, redo, undo } from '@/core/history'
-import { getCatalogEntry, getSizeBounds } from '@/data/catalog/furniture.js'
+import { getCatalogEntry, getItemSizeBounds } from '@/data/catalog/furniture.js'
 
 /**
  * Store do documento: o projeto que é guardado, exportado e partilhado
@@ -233,12 +233,12 @@ export const useProjectStore = create((set, get) => {
      * mais próximo do centro; com posição (largar na planta), respeita-a
      * e só aplica o snap. Devolve o id do novo móvel (ou null).
      */
-    addFromCatalog: (catalogId, position) => {
+    addFromCatalog: (catalogId, position, overrides = {}) => {
       const entry = getCatalogEntry(catalogId)
       if (!entry) return null
       const { project } = get()
       const { room, settings } = project
-      const draft = createFurnitureItem(entry)
+      const draft = createFurnitureItem(entry, overrides)
       const items = getActiveLayout(project).items
       const centre = { x: room.width / 2, z: room.depth / 2 }
       const valid = position && Number.isFinite(position.x) && Number.isFinite(position.z)
@@ -256,7 +256,7 @@ export const useProjectStore = create((set, get) => {
       // O seletor de cor nativo emite uma alteração por movimento: juntam-se numa só.
       const mergeKey = Object.keys(patch).length === 1 && 'color' in patch ? `color:${itemId}` : null
       change(
-        (project) => updateItem(project, itemId, patch, { bounds: getSizeBounds(item.catalogId, DEFAULT_SIZE_BOUNDS) }),
+        (project) => updateItem(project, itemId, patch, { bounds: getItemSizeBounds(item, DEFAULT_SIZE_BOUNDS) }),
         { label: itemPatchLabel(item, patch), mergeKey },
       )
     },

@@ -165,6 +165,7 @@ export function validateItem(item, path, fail) {
   if (!isHexColor(item.color)) fail(`${path}.color`, 'Cor do móvel inválida.')
   if (item.finish !== null && typeof item.finish !== 'string') fail(`${path}.finish`, 'Acabamento inválido.')
   if (typeof item.locked !== 'boolean') fail(`${path}.locked`, 'Estado de bloqueio inválido.')
+  if (item.customSize !== undefined && typeof item.customSize !== 'boolean') fail(`${path}.customSize`, 'Indicação de medidas livres inválida.')
 }
 
 function checkRange(value, { min, max }, path, label, fail) {

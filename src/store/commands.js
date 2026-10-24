@@ -1,5 +1,6 @@
 import { findItem } from '@/core/model'
 import { snapAngle } from '@/core/geometry'
+import { getCatalogEntry } from '@/data/catalog/furniture.js'
 import { useEditorStore } from './editorStore.js'
 import { useProjectStore } from './projectStore.js'
 
@@ -20,6 +21,25 @@ function selectedItem() {
 /** Adiciona um móvel, seleciona-o e, em ecrãs pequenos, mostra a planta. */
 export function addCatalogItem(catalogId, position) {
   const id = project().addFromCatalog(catalogId, position)
+  if (id) {
+    editor().selectItem(id)
+    editor().setMobilePanel('plan')
+  }
+  return id
+}
+
+/**
+ * Móvel com as medidas de uma loja: usa o desenho e o modelo 3D de
+ * `catalogId`, mas com o nome e as medidas dadas (livres dos limites do modelo).
+ */
+export function addProductItem({ catalogId, name, dimensions }) {
+  const entry = getCatalogEntry(catalogId)
+  if (!entry) return null
+  const id = project().addFromCatalog(catalogId, null, {
+    name: name?.trim() || entry.name,
+    dimensions: { ...entry.dimensions, ...dimensions },
+    customSize: true,
+  })
   if (id) {
     editor().selectItem(id)
     editor().setMobilePanel('plan')

@@ -2,7 +2,7 @@ import { Copy, Lock, LockOpen, RotateCcw, RotateCw, Trash2, Truck } from 'lucide
 import { useState } from 'react'
 import { Button, ColorField, FieldGrid, IconButton, NumberField, PanelSection } from '@/components/ui'
 import { DEFAULT_SIZE_BOUNDS, FURNITURE_CATEGORIES, LIMITS } from '@/core/model'
-import { getCatalogEntry, getSizeBounds } from '@/data/catalog/furniture.js'
+import { getCatalogEntry, getItemSizeBounds } from '@/data/catalog/furniture.js'
 import { FINISHES } from '@/data/catalog/finishes.js'
 import { deleteSelected, duplicateSelected, rotateSelected, toggleLockSelected } from '@/store/commands.js'
 import { IssueList } from '@/features/analysis/IssueList.jsx'
@@ -22,7 +22,7 @@ const LOCKED_REASON = 'Desbloqueie o móvel para o alterar'
 export function ItemInspector({ item }) {
   const updateItem = useProjectStore((state) => state.updateItem)
   const entry = getCatalogEntry(item.catalogId)
-  const bounds = getSizeBounds(item.catalogId, DEFAULT_SIZE_BOUNDS)
+  const bounds = getItemSizeBounds(item, DEFAULT_SIZE_BOUNDS)
   const fixed = (key) => bounds.min[key] === bounds.max[key]
   const update = (patch) => updateItem(item.id, patch)
   const locked = item.locked
@@ -40,7 +40,9 @@ export function ItemInspector({ item }) {
           <p className="item-inspector__name">{item.name}</p>
           <p className="item-inspector__category">
             {FURNITURE_CATEGORIES[item.category].label}
-            {entry?.price != null && ` · ${new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(entry.price)}`}
+            {item.customSize
+              ? ' · medidas de uma loja'
+              : entry?.price != null && ` · ${new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(entry.price)}`}
           </p>
         </div>
         {locked && (
@@ -115,7 +117,9 @@ export function ItemInspector({ item }) {
           Passa pela porta?
         </Button>
         <p className="item-inspector__hint">
-          {['width', 'depth', 'height'].every(fixed)
+          {item.customSize
+            ? 'Medidas copiadas de uma loja: pode alterá-las livremente.'
+            : ['width', 'depth', 'height'].every(fixed)
             ? 'Este modelo tem medidas fixas.'
             : 'Também pode redimensionar com as pegas na planta, dentro dos limites do modelo.'}
         </p>

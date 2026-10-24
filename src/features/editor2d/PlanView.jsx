@@ -4,7 +4,7 @@ import { screenToWorld } from '@/core/coordinates/viewport.js'
 import { snapItemPosition } from '@/core/editing'
 import { DEFAULT_SIZE_BOUNDS, ROOM_TYPES } from '@/core/model'
 import { formatLength } from '@/core/units/units.js'
-import { getCatalogEntry, getItemProfile, getSizeBounds } from '@/data/catalog/furniture.js'
+import { getCatalogEntry, getItemProfile, getItemSizeBounds } from '@/data/catalog/furniture.js'
 import { AnalysisDefs, AnalysisLayer, CirculationLayer } from '@/features/analysis/AnalysisLayer.jsx'
 import { useElementSize } from '@/hooks/useElementSize.js'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts.js'
@@ -146,7 +146,7 @@ export function PlanView() {
             <SelectionOverlay
               item={selected}
               viewport={viewport}
-              bounds={getSizeBounds(selected.catalogId, DEFAULT_SIZE_BOUNDS)}
+              bounds={getItemSizeBounds(selected, DEFAULT_SIZE_BOUNDS)}
               interacting={interaction?.itemId === selected.id}
             />
           )}
