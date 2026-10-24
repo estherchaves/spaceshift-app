@@ -19,6 +19,7 @@ import {
 import { useEditorStore } from '@/store/editorStore.js'
 import { EditorStatusBar } from './EditorStatusBar.jsx'
 import { EditorWorkspace } from './EditorWorkspace.jsx'
+import { printSheet } from './editorActions.js'
 import { EditorTopBar } from './EditorTopBar.jsx'
 import { useEditorPersistence } from './useEditorPersistence.js'
 
@@ -40,6 +41,8 @@ const SHORTCUTS = [
   { key: 'z', ctrl: true, shift: true, handler: history(redoChange) },
   { key: 'y', ctrl: true, handler: history(redoChange) },
   { key: 's', ctrl: true, handler: () => void saveNow() },
+  // Ctrl+P imprime a ficha do projeto, não o ecrã do editor.
+  { key: 'p', ctrl: true, handler: () => void printSheet() },
   { key: ['Delete', 'Backspace'], handler: () => deleteSelected() },
   { key: 'Escape', handler: () => clearSelection() },
   { key: 'd', ctrl: true, handler: () => duplicateSelected() },

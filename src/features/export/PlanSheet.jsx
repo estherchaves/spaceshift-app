@@ -3,7 +3,7 @@ import { ROOM_TYPES } from '@/core/model'
 import { formatArea, formatCentimetres, formatLength } from '@/core/units/units.js'
 import { getItemPrice, getItemProfile } from '@/data/catalog/furniture.js'
 import { StaticPlan } from '@/features/editor2d/StaticPlan.jsx'
-import { SHEET } from './sheetLayout.js'
+import { problemsLabel, SHEET } from './sheetLayout.js'
 
 /*
  * Folha exportada como imagem: planta à escala com cotas e barra de
@@ -128,7 +128,7 @@ function SectionTitle({ y, children }) {
 }
 
 /** Cotas da divisão e barra de escala, por fora das paredes. */
-function PlanAnnotations({ room, viewport, height }) {
+export function PlanAnnotations({ room, viewport, height }) {
   const t = room.wallThickness
   const x0 = viewport.offsetX
   const x1 = viewport.offsetX + room.width * viewport.scale
@@ -169,14 +169,6 @@ function PlanAnnotations({ room, viewport, height }) {
       </g>
     </g>
   )
-}
-
-function problemsLabel({ errors, warnings }) {
-  if (!errors && !warnings) return 'Sem problemas'
-  const parts = []
-  if (errors) parts.push(`${errors} ${errors === 1 ? 'erro' : 'erros'}`)
-  if (warnings) parts.push(`${warnings} ${warnings === 1 ? 'aviso' : 'avisos'}`)
-  return parts.join(' · ')
 }
 
 function truncate(text, max) {

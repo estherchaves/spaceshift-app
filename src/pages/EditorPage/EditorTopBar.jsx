@@ -1,4 +1,4 @@
-import { ArrowLeft, Box, Check, CircleAlert, Download, FileJson, Image, LoaderCircle, Redo2, Save, Undo2 } from 'lucide-react'
+import { ArrowLeft, Box, Check, CircleAlert, Download, FileJson, Image, LoaderCircle, Printer, Redo2, Save, Undo2 } from 'lucide-react'
 import { useSyncExternalStore } from 'react'
 import { Logo } from '@/components/brand/Logo.jsx'
 import { Button, IconButton, Menu, SegmentedControl } from '@/components/ui'
@@ -10,7 +10,7 @@ import { selectProjectName } from '@/store/selectors.js'
 import { useEditorStore } from '@/store/editorStore.js'
 import { useProjectStore } from '@/store/projectStore.js'
 import { formatClock } from '@/utils/time.js'
-import { backToProjects, exportImage, exportJson } from './editorActions.js'
+import { backToProjects, exportImage, exportJson, printSheet } from './editorActions.js'
 import { ProjectNameField } from './ProjectNameField.jsx'
 import { VIEW_MODE_OPTIONS } from './viewModes.js'
 import './EditorTopBar.css'
@@ -80,6 +80,7 @@ export function EditorTopBar() {
               hint: sceneReady ? undefined : 'abra a vista 3D',
               onSelect: () => exportImage('3d'),
             },
+            { label: 'Ficha para imprimir ou PDF', icon: Printer, onSelect: printSheet },
             'separator',
             { label: 'Projeto completo (JSON)', icon: FileJson, onSelect: exportJson },
           ]}

@@ -28,3 +28,14 @@ export function exportJson() {
   const fileName = exportProjectJson(useProjectStore.getState().project)
   notify(`Projeto exportado: ${fileName}`, { tone: 'success' })
 }
+
+/** A ficha para imprimir vem num módulo à parte, carregado só quando é pedida. */
+export async function printSheet() {
+  await saveNow()
+  try {
+    const { printProjectSheet } = await import('@/features/export/printSheet.jsx')
+    printProjectSheet(useProjectStore.getState().project)
+  } catch {
+    notify('Não foi possível preparar a ficha para imprimir.', { tone: 'error' })
+  }
+}

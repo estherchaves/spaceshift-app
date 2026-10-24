@@ -1,0 +1,189 @@
+/*
+ * A ficha só existe durante a impressão: fica num contentor próprio no
+ * <body> e, no papel, tudo o resto da página desaparece.
+ */
+.print-root {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 14mm 16mm;
+  }
+
+  body > :not(.print-root) {
+    display: none !important;
+  }
+
+  html,
+  body {
+    height: auto;
+    overflow: visible;
+    background: #ffffff;
+  }
+
+  .print-root {
+    display: block;
+  }
+}
+
+.print-sheet {
+  color: #1d1f22;
+  font-family: var(--font-sans);
+  font-size: 10.5pt;
+  line-height: 1.4;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.print-sheet__header {
+  padding-bottom: 10pt;
+  border-bottom: 1.5pt solid #26282c;
+}
+
+.print-sheet__brand {
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.print-sheet__brand span {
+  color: #7d5c37;
+}
+
+.print-sheet__title {
+  margin-top: 4pt;
+  font-size: 20pt;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.print-sheet__subtitle {
+  margin-top: 2pt;
+  color: #5c5e62;
+}
+
+.print-sheet__summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8pt 14pt;
+  margin: 10pt 0;
+}
+
+.print-sheet__summary dt {
+  color: #5c5e62;
+  font-size: 8.5pt;
+}
+
+.print-sheet__summary dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-sheet__plan {
+  margin: 0;
+  padding: 8pt;
+  border: 0.75pt solid #d6d4cd;
+  border-radius: 6pt;
+  background: #f3f2ef;
+  break-inside: avoid;
+}
+
+.print-sheet__plan svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.print-sheet__plan figcaption {
+  margin-top: 4pt;
+  color: #5c5e62;
+  font-size: 8.5pt;
+}
+
+.print-sheet__section {
+  margin-top: 14pt;
+}
+
+.print-sheet__section h2 {
+  margin-bottom: 6pt;
+  padding-bottom: 3pt;
+  border-bottom: 0.75pt solid #d6d4cd;
+  font-size: 11pt;
+  font-weight: 600;
+  break-after: avoid;
+}
+
+.print-sheet__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.print-sheet__table th,
+.print-sheet__table td {
+  padding: 2.5pt 5pt;
+  border-bottom: 0.5pt solid #e2e0da;
+  text-align: left;
+  vertical-align: top;
+}
+
+.print-sheet__table thead th {
+  color: #5c5e62;
+  font-size: 8.5pt;
+  font-weight: 600;
+}
+
+.print-sheet__table tr {
+  break-inside: avoid;
+}
+
+/* Sem isto o browser repete o total no fim de cada página. */
+.print-sheet__table tfoot {
+  display: table-row-group;
+}
+
+.print-sheet__table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.print-sheet__table tfoot th,
+.print-sheet__table tfoot td {
+  border-bottom: 0;
+  border-top: 1pt solid #26282c;
+  font-weight: 600;
+}
+
+.print-sheet__swatch {
+  display: inline-block;
+  width: 8pt;
+  height: 8pt;
+  margin-right: 5pt;
+  border: 0.5pt solid rgba(0, 0, 0, 0.2);
+  border-radius: 2pt;
+  vertical-align: -0.5pt;
+}
+
+.print-sheet__issues {
+  display: grid;
+  gap: 4pt;
+  padding-left: 12pt;
+}
+
+.print-sheet__issues li[data-severity='error']::marker {
+  color: #b8423a;
+}
+
+.print-sheet__empty {
+  color: #5c5e62;
+}
+
+.print-sheet__footer {
+  margin-top: 16pt;
+  color: #6b6d70;
+  font-size: 8pt;
+}
