@@ -61,13 +61,15 @@ export function parseProductDimensions(text) {
     const m = t.match(new RegExp(label.source + NUMBER + String.raw`\s*` + UNIT))
     if (m) put(role, m[1], m[2])
   }
-  // 2. Letras soltas antes de um número: «L 220», «A: 85».
-  for (const m of t.matchAll(new RegExp(String.raw`(?:^|[^a-z0-9])([clpawdh])\s*[:=.]?\s*` + NUMBER + String.raw`\s*` + UNIT, 'g'))) {
+  // 2. Letras soltas antes de um número: «L 220», «A: 85». Um cabeçalho
+  //    «C x L x A» fica de fora (a última letra não é uma medida).
+  const header = t.match(/(?:^|[^a-z])([clpawdh])\s*x\s*([clpawdh])(?:\s*x\s*([clpawdh]))?(?![a-z])/)
+  const loose = header ? t.replace(header[0], ' ') : t
+  for (const m of loose.matchAll(new RegExp(String.raw`(?:^|[^a-z0-9])([clpawdh])\s*[:=.]?\s*` + NUMBER + String.raw`\s*` + UNIT, 'g'))) {
     put(LETTERS[m[1]], m[2], m[3])
   }
   // 3. Cabeçalho com a ordem e uma série de números: «LxPxA: 220x95x85».
   const series = t.match(new RegExp(NUMBER + String.raw`\s*` + UNIT + String.raw`\s*x\s*` + NUMBER + String.raw`\s*` + UNIT + String.raw`(?:\s*x\s*` + NUMBER + String.raw`\s*` + UNIT + ')?'))
-  const header = t.match(/(?:^|[^a-z])([clpawdh])\s*x\s*([clpawdh])(?:\s*x\s*([clpawdh]))?(?![a-z])/)
   const named = Object.keys(values).length
   if (series && named < 2) {
     const nums = [
@@ -149,16 +151,16 @@ export function guessCatalogId(text, { round = false } = {}) {
   return null
 }
 
-/** Nome do produto: a primeira linha com palavras que não é só medidas. */
+/** Nome do produto: a primeira linha com palavras, sem as medidas que vierem a seguir. */
+const DIMENSION_START = /(?:ø|⌀|\b(?:largura|altura|profundidade|comprimento|medidas|dimens\w*|width|height|depth|diametro|diâmetro)\b|(?:^|\s)[clpawdh]\s*[:.]?\s*\d|\d+(?:[.,]\d+)?\s*(?:mm|cm|m)\b|\d+(?:[.,]\d+)?\s*[x×*]\s*\d)/i
+
 export function guessProductName(text, maxLength = 60) {
   for (const line of String(text ?? '').split(/\r?\n/)) {
-    const clean = line.replace(/\s+/g, ' ').trim()
-    if (!clean) continue
+    const cut = line.search(DIMENSION_START)
+    const clean = (cut >= 0 ? line.slice(0, cut) : line).replace(/\s+/g, ' ').replace(/[\s,;:·|–-]+$/, '').trim()
     const letters = (clean.match(/\p{L}/gu) ?? []).length
     const digits = (clean.match(/\d/g) ?? []).length
-    if (letters >= 3 && letters > digits && !/^(largura|profundidade|altura|comprimento|medidas|dimens|width|depth|height)/i.test(clean)) {
-      return clean.slice(0, maxLength)
-    }
+    if (letters >= 3 && letters > digits) return clean.slice(0, maxLength)
   }
   return null
 }

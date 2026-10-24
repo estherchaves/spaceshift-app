@@ -12,6 +12,7 @@ describe('parseProductDimensions', () => {
     ['Width: 220 cm\nDepth: 95 cm\nHeight: 85 cm', { width: 2.2, depth: 0.95, height: 0.85 }],
     ['W 2200 x D 950 x H 850 mm', { width: 2.2, depth: 0.95, height: 0.85 }],
     ['AxLxP: 85 x 220 x 95 cm', { width: 2.2, depth: 0.95, height: 0.85 }],
+    ['C x L x A: 285 x 198 x 83 cm', { width: 2.85, depth: 1.98, height: 0.83 }],
     ['Comprimento 200 cm, Largura 90 cm, Altura 75 cm', { width: 2, depth: 0.9, height: 0.75 }],
     ['2,20 x 0,95 x 0,85', { width: 2.2, depth: 0.95, height: 0.85 }],
   ])('%s', (text, expected) => {
@@ -62,5 +63,8 @@ describe('guessCatalogId e guessProductName', () => {
     expect(guessProductName('\nSofá KIVIK 3 lugares\nLargura: 228 cm')).toBe('Sofá KIVIK 3 lugares')
     expect(guessProductName('220 x 95 x 85 cm')).toBeNull()
     expect(guessProductName('Largura: 228 cm')).toBeNull()
+    expect(guessProductName('Mesa redonda NORDEN Ø 120 cm, altura 74 cm')).toBe('Mesa redonda NORDEN')
+    expect(guessProductName('Cama de casal 160x200')).toBe('Cama de casal')
+    expect(guessProductName('Sofá 3 lugares - L 220 x P 95 x A 85 cm')).toBe('Sofá 3 lugares')
   })
 })

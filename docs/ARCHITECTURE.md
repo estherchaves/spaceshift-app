@@ -93,11 +93,11 @@ todos os móveis 3D serão geometria procedimental do Three.js.
 - **Circulação (Fase 6):** ver secção 13. Avisos, distintos dos erros, e
   orientações, não garantias de conformidade legal.
 
-## 5. Modelo de dados (esquema v1)
+## 5. Modelo de dados (esquema v2)
 
 ```js
 {
-  schemaVersion: 1,
+  schemaVersion: 2,
   id: 'project_…', name: 'Sala da Ana',
   createdAt: '2026-10-23T18:00:00.000Z', updatedAt: '…',
   room: {
@@ -105,6 +105,14 @@ todos os móveis 3D serão geometria procedimental do Three.js.
     width: 5, depth: 4,        // m, interior
     wallHeight: 2.7, wallThickness: 0.15,
     wallColor: '#f2f0eb', floorMaterial: 'oak', floorColor: '#c9a77c',
+    openings: [{               // v2: portas e janelas (Fase 9)
+      id: 'opening_…', type: 'door', wall: 'bottom', offset: 4.15,
+      width: 0.8, height: 2, sill: 0, hinge: 'end', swing: 'in',
+    }],
+    route: {                   // v2: caminho de entrega até à divisão
+      steps: [{ id: 'step_…', type: 'stairs', label: 'Escada', width: 1, height: 2.1, turn: true }],
+      entryDoorId: 'opening_…',
+    },
   },
   layouts: [                   // disposições alternativas para comparar
     {
@@ -114,11 +122,13 @@ todos os móveis 3D serão geometria procedimental do Three.js.
         position: { x: 2.5, z: 1 }, rotation: 0, elevation: 0,
         dimensions: { width: 2.2, depth: 0.9, height: 0.85 },
         color: '#8a8f94', finish: 'linen', locked: false,
+        customSize: true,      // opcional (v2): medidas de uma loja, sem limites do modelo
       }],
     },
   ],
   activeLayoutId: 'layout_…',
-  settings: { gridSize: 0.1, snapToGrid: true, rotationStep: 15, circulationMin: 0.9 },
+  settings: { gridSize: 0.1, snapToGrid: true, rotationStep: 15, circulationMin: 0.9,
+              accessibility: 'none' },   // v2: 'none' | 'wheelchair' | 'pram'
 }
 ```
 
@@ -128,7 +138,8 @@ todos os móveis 3D serão geometria procedimental do Three.js.
   mesmo que o catálogo mude.
 - **Versões e migrações:** `MIGRATIONS[n]` converte da versão `n` para `n+1`.
   `migrateProject()` aplica a cadeia e recusa projetos de versões futuras com
-  uma mensagem clara.
+  uma mensagem clara. A migração 1 → 2 acrescenta `room.openings = []`,
+  `room.route` vazio e `settings.accessibility = 'none'`.
 - **Leitura segura:** `parseProject(texto)` faz JSON → migração → validação e
   nunca lança exceções. Devolve `{ ok: true, project }` ou
   `{ ok: false, error: { code, message, details } }` com mensagens em
@@ -177,11 +188,16 @@ spaceshift/
     │   ├── editor2d/           # ✓ Fases 2–3: PlanView, PlanItem, SelectionOverlay,
     │   │                       #   DropGhost, ZoomControls, useViewport,
     │   │                       #   usePlanPointer (gestos), planGeometry
+    │   │                       #   ✓ Fase 9: OpeningsLayer (portas e janelas), WalkLayer +
+    │   │                       #   useWalkingPath (percurso a pé)
     │   │                       #   symbols/PlanSymbol (16 desenhos de planta) ✓ Fase 4
     │   ├── catalog/            # ✓ CatalogPanel, CatalogCard (arrastar e +),
     │   │                       #   CatalogPreview (mesmo símbolo da planta), filterCatalog
+    │   │                       #   ✓ Fase 9: PasteProductDialog (medidas de uma loja)
     │   ├── inspector/          # ✓ PropertiesPanel, RoomInspector, ItemInspector,
     │   │                       #   FinishPicker (acabamento, cor, bloqueio, altura ao chão)
+    │   │                       #   ✓ Fase 9: OpeningInspector (porta/janela selecionada)
+    │   ├── delivery/           # ✓ Fase 9: DeliveryDialog («Passa pela porta?»), StepDiagram
     │   ├── scene3d/            # ✓ SceneView (lazy, WebGL, erros), Scene3D, CameraRig,
     │   │                       #   Furniture3D, useItemDrag3D, models/ (peças e materiais),
     │   │                       #   room/ (paredes, corte, chão procedimental)
@@ -204,11 +220,16 @@ spaceshift/
     │   │                       # validação, migrações, (de)serialização ✓ Fase 1
     │   │                       # sanitize.js (alterações seguras)      ✓ Fase 2
     │   │                       # itemOps.js (operações sobre móveis)   ✓ Fase 3
+    │   │                       # ✓ Fase 9: openings.js (paredes, vãos, arco da porta),
+    │   │                       #   route.js (caminho de entrega), accessibility.js (perfis),
+    │   │                       #   productText.js (ler medidas coladas de uma loja)
     │   ├── editing/            # ✓ Fase 3: mover/rodar/redimensionar (snap pela
     │   │                       #   aresta, pegas com aresta oposta fixa), espaço livre
     │   ├── analysis/           # ✓ Fase 6: analyzeLayout() → erros e avisos,
     │   │                       #   rules.js (limiares), circulation.js (grelha)
     │   ├── analysis/score.js   # ✓ Fase 7: pontuação de uma disposição e destaques
+    │   ├── analysis/           # ✓ Fase 9: openingRules.js (porta, janela, rodar),
+    │   │                       #   delivery.js («passa pela porta?»), walkingPath.js (A*)
     │   └── history/            # ✓ Fase 7: anular/refazer com instantâneos e nomes
     ├── data/catalog/           # ✓ dados puros: furniture.js (22 móveis), finishes.js
     ├── data/examples/          # ✓ Fase 7: projeto de exemplo (sala com duas disposições)
@@ -524,3 +545,68 @@ Ideias para diferenciar o SpaceShift, centradas em «cabe?» e «consigo passar?
   móveis numerados (números sobrepostos afastam-se), tabela com medidas,
   rotação, notas e preço, e os avisos da análise. Exportar → «Ficha para
   imprimir ou PDF», ou Ctrl+P no editor.
+
+## 17. Portas, janelas, entrega e acessibilidade (Fase 9)
+
+Portas e janelas pertencem à divisão (as mesmas em todas as disposições).
+Cada uma fica numa parede com `offset` = distância do início da parede ao
+centro do vão. Cada parede tem um referencial (`wallFrame`): início,
+direção e normal para dentro (cima: de (0,0) para +x, normal +z; baixo:
+de (0,P) para +x, normal −z; esquerda: de (0,0) para +z, normal +x;
+direita: de (L,0) para +z, normal −x). As aberturas ficam a 10 cm dos
+cantos e umas das outras; mudar o tamanho da divisão volta a encaixá-las
+(`fitOpeningsToRoom`).
+
+- **Planta:** o vão corta a parede; a porta mostra a folha aberta a 90° e
+  o arco tracejado (o sentido do arco vem do produto vetorial entre folha
+  e ombreira, no ecrã); a janela tem duas linhas de vidro. Arrastar uma
+  abertura passa-a para a parede mais próxima, com snap na aresta.
+- **3D:** `wallPieces` corta cada parede em peças à volta dos vãos (ao
+  lado, por baixo da janela, por cima do vão), com a folha da porta e o
+  vidro. O corte automático das paredes esconde também as aberturas.
+- **Regras** (`openingRules.js`): a área varrida pela folha (quarto de
+  círculo convexo, raio = largura) tem de estar livre até à altura da
+  porta (erro); a zona de circulação principal tem de chegar à soleira
+  (aviso); um móvel a menos de 15 cm do vidro e mais alto do que o
+  peitoril tapa a janela (aviso; candeeiros e plantas não contam).
+- **Acessibilidade** (`accessibility.js`): cadeira de rodas (passagem 90,
+  rodar 150, porta 80 cm) e carrinho de bebé (80, 120, 70 cm). A passagem
+  passa a ser a maior entre a mínima e a do perfil, e o acesso a cada
+  móvel usa essa largura. O círculo para rodar procura-se numa grelha de
+  circulação com o diâmetro do perfil, ligada à zona principal, e é
+  desenhado na planta; se não existir, é um aviso.
+
+**«Passa pela porta?»** (`delivery.js`, `features/delivery`). O caminho de
+entrega (`room.route`) é uma lista de passos (porta, corredor, escada) que
+acaba sempre numa porta da divisão. Para cada passo experimentam-se as seis
+maneiras de pegar no móvel (o que vai à frente, ao lado e na vertical):
+
+- vão a direito (porta, ou corredor e escada sem curva): só conta o corte
+  transversal, que pode rodar dentro do vão — inclinado, a caixa
+  envolvente de p × q rodado θ é (p·cos θ + q·sen θ) × (p·sen θ + q·cos θ);
+- curva a 90° entre larguras a e b, com o móvel de largura l em planta:
+  l < min(a, b) e o comprimento ≤ min_θ (a·sen θ + b·cos θ − l) / (sen θ·cos θ)
+  (encostado ao canto interior); a medida na vertical tem de caber na altura.
+
+Entre as maneiras que passam escolhe-se a mais natural (direito, deitado,
+ao alto). A folga é o maior δ que se pode somar a todas as medidas sem
+deixar de passar, por bisseção (negativa = quanto falta). Cada passo tem um
+desenho à escala: o vão visto de frente ou a planta do canto com o móvel na
+posição mais apertada.
+
+**Percurso a pé** (`walkingPath.js`). Usa a mesma grelha de folgas da
+circulação (`buildClearanceField`): A* com 8 vizinhos sobre as células com
+folga ≥ metade da largura de quem passa (pessoa 50 cm, ou a do perfil de
+acessibilidade), com o custo um pouco agravado junto aos móveis; depois o
+caminho é endireitado por linha de vista. A largura em cada ponto é a corda
+mais curta que passa por ele (raios exatos às paredes e aos móveis, de 10°
+em 10°); o ponto mais estreito, sem contar as pontas, é marcado com a cota.
+Ferramenta na barra da planta (tecla P); Esc sai.
+
+**Medidas de uma loja** (`productText.js`). Lê «L 220 x P 95 x A 85 cm»,
+«220x95x85», «LxPxA: …», «Largura: 2,2 m», «Ø 110», W × D × H, mm/cm/m
+(sem unidade: adivinha pela grandeza). O tipo de móvel vem de palavras-chave
+(do mais específico para o mais geral) ou, sem pistas, do modelo do
+catálogo com as medidas mais parecidas. O móvel fica com `customSize: true`:
+usa o desenho e o 3D do modelo, mas as medidas não ficam presas aos limites
+dele.
