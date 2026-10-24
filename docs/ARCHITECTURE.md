@@ -406,3 +406,21 @@ Os testes ficam ao lado do código que testam (`*.test.js`).
   propriedades lista os problemas do móvel selecionado. Na cena 3D o chão
   mostra as mesmas zonas e cotas, e o móvel em erro fica com contorno e
   pegada vermelhos.
+
+## 14. Plano alargado (aprovado em 24/10/2026)
+
+Ideias para diferenciar o SpaceShift, centradas em «cabe?» e «consigo passar?»:
+
+- **Fase 7** (além de projetos, desfazer/refazer, guardar e exportar):
+  comparação de disposições lado a lado com pontuação (área livre,
+  circulação, avisos, custo total).
+- **Fase 8:** como estava planeada.
+- **Fase 9, nova:**
+  - portas e janelas nas paredes, com o arco de abertura nas colisões;
+  - «Passa pela porta?»: verificar se um móvel chega à divisão pela
+    entrada, corredor e escada (inclinado ou na diagonal);
+  - percurso a pé entre dois pontos, com o ponto mais estreito assinalado;
+  - modo acessibilidade (cadeira de rodas com círculo de 150 cm, carrinho
+    de bebé), com limites próprios;
+  - criar um móvel colando as medidas de um produto de qualquer loja.
+- **Com backend (depois):** link só de leitura para partilhar uma disposição.
