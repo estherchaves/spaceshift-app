@@ -30,7 +30,9 @@ export function EditorTopBar() {
         <IconButton icon={ArrowLeft} label="Os meus projetos" tooltipAlign="start" onClick={backToProjects} className="topbar__back" />
         <Logo />
         <span className="topbar__divider" aria-hidden="true" />
-        <ProjectNameField name={name} onRename={renameProject} />
+        <h1 className="topbar__title">
+          <ProjectNameField name={name} onRename={renameProject} />
+        </h1>
         <SaveStatus />
       </div>
 

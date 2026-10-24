@@ -11,7 +11,8 @@ export function isEditableTarget(target) {
  * Atalhos de teclado globais. Cada atalho é `{ key, ctrl?, shift?, handler }`
  * (`ctrl` aceita Ctrl ou ⌘). Atalhos sem modificadores são ignorados
  * enquanto se escreve num campo, para não roubar teclas como Delete ou setas.
- * `shift` indefinido aceita as duas variantes.
+ * `shift` indefinido aceita as duas variantes. Com um diálogo modal aberto
+ * nenhum atalho dispara: Delete não pode apagar o móvel que está por trás.
  */
 export function useKeyboardShortcuts(shortcuts, { enabled = true } = {}) {
   const ref = useRef(shortcuts)
@@ -23,6 +24,7 @@ export function useKeyboardShortcuts(shortcuts, { enabled = true } = {}) {
     if (!enabled) return undefined
     const onKeyDown = (event) => {
       if (event.defaultPrevented || event.isComposing) return
+      if (document.querySelector('[aria-modal="true"]')) return
       const ctrl = event.ctrlKey || event.metaKey
       if (isEditableTarget(event.target) && !ctrl) return
       for (const shortcut of ref.current) {

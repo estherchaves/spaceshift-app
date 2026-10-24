@@ -20,14 +20,37 @@
   transform: translateY(-1px);
 }
 
+/* O botão fica só com o nome (nome acessível = texto visível) e
+   estica-se por cima do cartão inteiro com ::after. */
 .project-card__open {
-  display: flex;
-  flex-direction: column;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
   padding: 0;
   border: 0;
-  border-radius: inherit;
   background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
   text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-card__open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+}
+
+.project-card__open:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.project-card__open:focus-visible::after {
+  box-shadow: var(--focus-ring);
 }
 
 .project-card__preview {
@@ -59,6 +82,12 @@
   padding: var(--space-3) var(--space-10) var(--space-4) var(--space-4);
 }
 
+.project-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 .project-card__name {
   overflow: hidden;
   font-size: var(--text-base);
@@ -80,6 +109,7 @@
 
 .project-card__menu {
   position: absolute;
+  z-index: 1;
   right: var(--space-2);
   bottom: var(--space-3);
 }

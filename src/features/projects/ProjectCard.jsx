@@ -1,4 +1,5 @@
 import { Copy, EllipsisVertical, FileJson, FolderOpen, Pencil, TriangleAlert, Trash2 } from 'lucide-react'
+import { useId } from 'react'
 import { IconButton, Menu } from '@/components/ui'
 import { ROOM_TYPES } from '@/core/model'
 import { formatArea, formatLength } from '@/core/units/units.js'
@@ -10,6 +11,7 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`
 
 /** Cartão de um projeto guardado: miniatura da planta, medidas e ações. */
 export function ProjectCard({ summary, onOpen, onRename, onDuplicate, onExport, onDelete }) {
+  const metaId = useId()
   if (summary.broken) {
     return (
       <article className="project-card project-card--broken" aria-label="Projeto danificado">
@@ -31,21 +33,25 @@ export function ProjectCard({ summary, onOpen, onRename, onDuplicate, onExport, 
   const type = ROOM_TYPES[summary.roomType]?.label ?? 'Divisão'
   return (
     <article className="project-card">
-      <button type="button" className="project-card__open" onClick={() => onOpen(summary)} aria-label={`Abrir ${summary.name}`}>
-        <div className="project-card__preview">
-          {room && (
-            <StaticPlan
-              className="project-card__plan"
-              room={room}
-              items={summary.preview.items}
-              width={320}
-              height={190}
-              padding={18}
-            />
-          )}
-        </div>
-        <div className="project-card__body">
-          <h2 className="project-card__name">{summary.name}</h2>
+      <div className="project-card__preview">
+        {room && (
+          <StaticPlan
+            className="project-card__plan"
+            room={room}
+            items={summary.preview.items}
+            width={320}
+            height={190}
+            padding={18}
+          />
+        )}
+      </div>
+      <div className="project-card__body">
+        <h2 className="project-card__name">
+          <button type="button" className="project-card__open" onClick={() => onOpen(summary)} aria-describedby={metaId}>
+            {summary.name}
+          </button>
+        </h2>
+        <div id={metaId} className="project-card__details">
           <p className="project-card__meta">
             {type}
             {room && ` · ${formatLength(room.width)} × ${formatLength(room.depth)}`}
@@ -59,7 +65,7 @@ export function ProjectCard({ summary, onOpen, onRename, onDuplicate, onExport, 
             <time dateTime={summary.updatedAt}>Editado {formatRelativeTime(summary.updatedAt)}</time>
           </p>
         </div>
-      </button>
+      </div>
       <div className="project-card__menu">
         <Menu
           label={`Ações de ${summary.name}`}

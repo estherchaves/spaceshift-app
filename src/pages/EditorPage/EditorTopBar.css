@@ -81,6 +81,11 @@
   }
 }
 
+.topbar__title {
+  display: contents;
+  font: inherit;
+}
+
 .topbar__back {
   margin-right: -2px;
 }

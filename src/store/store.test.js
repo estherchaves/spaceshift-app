@@ -80,4 +80,9 @@ describe('computeLayoutMetrics', () => {
     const table = place('round-table', 2, 1.5)
     expect(computeLayoutMetrics(room, [table], settings).occupiedArea).toBeCloseTo((Math.PI / 4) * 1.1 * 1.1)
   })
+
+  it('tapetes e candeeiros suspensos não contam como chão ocupado (igual à comparação)', () => {
+    const items = [place('rug', 2, 1.5), place('pendant-lamp', 2, 1.5)]
+    expect(computeLayoutMetrics(room, items, settings).occupiedArea).toBe(0)
+  })
 })

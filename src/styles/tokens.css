@@ -2,8 +2,9 @@
  * Design tokens do SpaceShift.
  * Direção: estúdio de arquitetura. Neutros quentes (papel, pedra, grafite),
  * um único acento latão para ações principais e seleção, linhas finas,
- * sombras quase impercetíveis. Todas as cores de estado têm contraste AA
- * sobre --color-surface.
+ * sombras quase impercetíveis. Todos os textos (incluindo o subtil e as
+ * cores de estado sobre os fundos suaves) têm contraste AA (≥ 4,5:1),
+ * verificado com o axe na Fase 8.
  */
 :root {
   /* Neutros */
@@ -15,21 +16,21 @@
   --color-border: #e2e0da;
   --color-border-strong: #cfccc4;
   --color-text: #1d1f22;
-  --color-text-muted: #64666a;
-  --color-text-subtle: #8c8d90;
+  --color-text-muted: #5c5e62;
+  --color-text-subtle: #6b6d70;
   --color-graphite: #26282c;
   --color-graphite-hover: #3a3d42;
   --color-on-graphite: #f6f5f2;
 
   /* Acento e estados */
   --color-accent: #a27c4f;
-  --color-accent-strong: #8a6740;
+  --color-accent-strong: #7d5c37;
   --color-accent-soft: #f4ede3;
   --color-danger: #b8423a;
   --color-danger-soft: #f9ebe9;
-  --color-warning: #a8700f;
+  --color-warning: #8f600d;
   --color-warning-soft: #fbf3e2;
-  --color-success: #3a7d55;
+  --color-success: #2f6b48;
   --color-success-soft: #e9f3ed;
   --color-focus: #2f6fd6;
 

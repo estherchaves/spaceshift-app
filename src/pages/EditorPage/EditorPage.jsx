@@ -56,7 +56,8 @@ export function EditorPage() {
   const mobilePanel = useEditorStore((state) => state.mobilePanel)
   const setMobilePanel = useEditorStore((state) => state.setMobilePanel)
   const compareOpen = useEditorStore((state) => state.compareOpen)
-  useKeyboardShortcuts(SHORTCUTS)
+  // A comparação cobre o editor: os atalhos dele não podem mexer no projeto por trás.
+  useKeyboardShortcuts(SHORTCUTS, { enabled: !compareOpen })
   useEditorPersistence()
 
   return (

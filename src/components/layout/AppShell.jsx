@@ -20,7 +20,7 @@ export function AppShell({ topBar, mobileNav, left, main, right, statusBar, mobi
       <div className="app-shell__right" data-panel="properties">
         {right}
       </div>
-      {overlay && <div className="app-shell__overlay">{overlay}</div>}
+      {overlay && <main className="app-shell__overlay">{overlay}</main>}
       <div className="app-shell__status">{statusBar}</div>
     </div>
   )

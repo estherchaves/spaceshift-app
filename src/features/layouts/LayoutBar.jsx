@@ -28,15 +28,14 @@ export function LayoutBar() {
         <Layers size={14} strokeWidth={1.75} aria-hidden="true" />
         <span>Disposições</span>
       </span>
-      <div className="layout-bar__tabs" role="tablist" aria-label="Disposições">
+      <div className="layout-bar__tabs" role="group" aria-label="Disposições">
         {layouts.map((layout) => {
           const active = layout.id === activeLayoutId
           return (
             <div key={layout.id} className="layout-tab" data-active={active || undefined}>
               <button
                 type="button"
-                role="tab"
-                aria-selected={active}
+                aria-pressed={active}
                 className="layout-tab__button"
                 onClick={() => switchLayout(layout.id)}
                 onDoubleClick={() => setDialog({ type: 'rename', layout })}

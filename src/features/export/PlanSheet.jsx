@@ -13,8 +13,8 @@ import { SHEET } from './sheetLayout.js'
 
 const FONT = "'Inter Variable', 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
 const INK = '#1d1f22'
-const MUTED = '#64666a'
-const SUBTLE = '#8c8d90'
+const MUTED = '#5c5e62'
+const SUBTLE = '#6b6d70'
 const LINE = '#e2e0da'
 const MAX_ROWS = 16
 

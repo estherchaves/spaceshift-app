@@ -64,14 +64,14 @@ export function Dialog({ open, title, description, onClose, children, footer, si
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
       >
-        <header className="dialog__header">
+        <div className="dialog__header">
           <h2 id={titleId} className="dialog__title">
             {title}
           </h2>
           <button type="button" className="dialog__close" aria-label="Fechar" onClick={onClose}>
             <X size={16} strokeWidth={1.75} aria-hidden="true" />
           </button>
-        </header>
+        </div>
         {description && (
           <p id={descriptionId} className="dialog__description">
             {description}

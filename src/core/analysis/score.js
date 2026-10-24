@@ -55,6 +55,16 @@ export function gradeFor(score, hasErrors = false) {
 }
 
 /**
+ * Chão ocupado pelos móveis que impedem a passagem (tapetes e objetos
+ * elevados não contam). É a mesma medida na barra inferior e na comparação.
+ */
+export function blockedFloorArea(items, getProfile = () => ({})) {
+  return items
+    .filter(blocksWalking)
+    .reduce((sum, item) => sum + shapeArea(item.dimensions, getProfile(item).shape ?? 'rect'), 0)
+}
+
+/**
  * @param {object} room
  * @param {object[]} items
  * @param {ReturnType<import('./analyzeLayout.js').analyzeLayout>} analysis  análise desta disposição
@@ -62,9 +72,7 @@ export function gradeFor(score, hasErrors = false) {
  */
 export function scoreLayout(room, items, analysis, { getProfile = () => ({}), getPrice = () => null } = {}) {
   const roomArea = room.width * room.depth
-  const occupied = items
-    .filter(blocksWalking)
-    .reduce((sum, item) => sum + shapeArea(item.dimensions, getProfile(item).shape ?? 'rect'), 0)
+  const occupied = blockedFloorArea(items, getProfile)
   const freeArea = Math.max(0, roomArea - occupied)
   const freeRatio = roomArea > 0 ? freeArea / roomArea : 0
 

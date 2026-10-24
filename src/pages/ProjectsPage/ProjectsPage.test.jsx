@@ -10,7 +10,7 @@ beforeEach(() => {
   window.location.hash = '#/'
 })
 
-const card = (name) => screen.getByRole('button', { name: `Abrir ${name}` }).closest('article')
+const card = (name) => screen.getByRole('button', { name: name }).closest('article')
 
 async function openMenu(user, name) {
   await user.click(within(card(name)).getByRole('button', { name: `Mais ações para ${name}` }))
@@ -24,7 +24,7 @@ describe('página de projetos', () => {
     expect(await screen.findByRole('heading', { name: 'Comece pela sua primeira divisão' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Abrir projeto de exemplo' }))
     await waitFor(() => expect(window.location.hash).toMatch(/^#\/projeto\//))
-    expect(await screen.findByRole('tab', { name: /Sofá virado para a TV/ })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /^Sofá virado para a TV/, pressed: true })).toBeInTheDocument()
     expect(useProjectStore.getState().project.name).toBe('Sala de exemplo')
   })
 
@@ -50,16 +50,16 @@ describe('página de projetos', () => {
     const user = userEvent.setup()
     await getRepository().save(createProject({ name: 'Sala' }))
     render(<App />)
-    await screen.findByRole('button', { name: 'Abrir Sala' })
+    await screen.findByRole('button', { name: 'Sala' })
 
     await user.click(within(await openMenu(user, 'Sala')).getByRole('menuitem', { name: 'Mudar o nome' }))
     const nameField = screen.getByLabelText('Nome do projeto')
     await user.clear(nameField)
     await user.type(nameField, 'Sala grande{Enter}')
-    expect(await screen.findByRole('button', { name: 'Abrir Sala grande' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Sala grande' })).toBeInTheDocument()
 
     await user.click(within(await openMenu(user, 'Sala grande')).getByRole('menuitem', { name: 'Duplicar' }))
-    expect(await screen.findByRole('button', { name: 'Abrir Sala grande (cópia)' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Sala grande (cópia)' })).toBeInTheDocument()
 
     await user.click(within(await openMenu(user, 'Sala grande')).getByRole('menuitem', { name: 'Eliminar' }))
     const confirm = screen.getByRole('alertdialog', { name: 'Eliminar «Sala grande»?' })
@@ -69,7 +69,7 @@ describe('página de projetos', () => {
     expect(await getRepository().list()).toHaveLength(2)
     await user.click(within(await openMenu(user, 'Sala grande')).getByRole('menuitem', { name: 'Eliminar' }))
     await user.click(screen.getByRole('button', { name: 'Eliminar projeto' }))
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'Abrir Sala grande' })).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Sala grande' })).not.toBeInTheDocument())
     expect((await getRepository().list()).map((s) => s.name)).toEqual(['Sala grande (cópia)'])
   })
 
@@ -79,10 +79,10 @@ describe('página de projetos', () => {
     const input = await screen.findByLabelText('Importar projeto (ficheiro JSON)')
     const project = createProject({ name: 'Importada' })
     await user.upload(input, new File([serializeProject(project)], 'sala.spaceshift.json', { type: 'application/json' }))
-    expect(await screen.findByRole('button', { name: 'Abrir Importada' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Importada' })).toBeInTheDocument()
     // O mesmo ficheiro outra vez: cópia, não substitui.
     await user.upload(input, new File([serializeProject(project)], 'sala.spaceshift.json', { type: 'application/json' }))
-    expect(await screen.findByRole('button', { name: 'Abrir Importada (cópia)' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Importada (cópia)' })).toBeInTheDocument()
     await user.upload(input, new File(['{"format":"outra-coisa"}'], 'x.json', { type: 'application/json' }))
     expect(await screen.findByText(/Não foi possível importar: Este ficheiro não é um projeto SpaceShift/)).toBeInTheDocument()
   })
@@ -92,10 +92,10 @@ describe('página de projetos', () => {
     await getRepository().save(createProject({ name: 'Escritório' }))
     await getRepository().save(createProject({ name: 'Sala' }))
     render(<App />)
-    await screen.findByRole('button', { name: 'Abrir Sala' })
+    await screen.findByRole('button', { name: 'Sala' })
     await user.type(screen.getByRole('searchbox', { name: 'Procurar projetos' }), 'escritorio')
-    expect(screen.getByRole('button', { name: 'Abrir Escritório' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Abrir Sala' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Escritório' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Sala' })).not.toBeInTheDocument()
   })
 
   it('um endereço de projeto inexistente explica e volta à lista', async () => {

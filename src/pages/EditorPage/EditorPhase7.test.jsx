@@ -16,6 +16,8 @@ import { EditorPage } from './EditorPage.jsx'
 const store = () => useProjectStore.getState()
 const toPx = (x, z) => worldToScreen(fitRoom(store().project.room, TEST_ELEMENT_SIZE), { x, z })
 const svg = () => document.querySelector('.plan-svg')
+const layoutGroup = () => within(screen.getByRole('group', { name: 'Disposições' }))
+const tabs = () => layoutGroup().getAllByRole('button').filter((b) => b.hasAttribute('aria-pressed'))
 
 beforeEach(() => {
   resetEditorStore()
@@ -91,15 +93,14 @@ describe('disposições e comparação', () => {
   it('cria uma cópia da disposição, troca entre elas e compara lado a lado', async () => {
     const user = userEvent.setup()
     render(<EditorPage />)
-    const tabs = () => screen.getAllByRole('tab')
     expect(tabs().map((t) => t.textContent)).toEqual(['Sofá virado para a TV9', 'Sofá de canto10'])
 
     await user.click(screen.getByRole('button', { name: 'Nova disposição' }))
     await user.click(screen.getByRole('menuitem', { name: 'Copiar a disposição atual' }))
     expect(tabs()).toHaveLength(3)
-    expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Sofá virado para a TV (cópia)')
+    expect(layoutGroup().getByRole('button', { pressed: true })).toHaveTextContent('Sofá virado para a TV (cópia)')
 
-    await user.click(screen.getByRole('tab', { name: /Sofá de canto/ }))
+    await user.click(screen.getByRole('button', { name: /^Sofá de canto/ }))
     expect(getActiveLayout(store().project).name).toBe('Sofá de canto')
 
     await user.click(screen.getByRole('button', { name: /^Comparar/ }))
@@ -125,7 +126,7 @@ describe('disposições e comparação', () => {
     await user.click(screen.getByRole('button', { name: 'Eliminar disposição' }))
     expect(store().project.layouts).toHaveLength(1)
     act(() => store().undo())
-    await waitFor(() => expect(screen.getAllByRole('tab')).toHaveLength(2))
+    await waitFor(() => expect(tabs()).toHaveLength(2))
   })
 
   it('Comparar precisa de duas disposições', () => {

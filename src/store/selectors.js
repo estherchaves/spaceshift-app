@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
-import { analyzeLayout } from '@/core/analysis'
-import { shapeArea } from '@/core/geometry'
+import { analyzeLayout, blockedFloorArea } from '@/core/analysis'
 import { getActiveLayout, roomArea } from '@/core/model'
 import { getItemProfile } from '@/data/catalog/furniture.js'
 import { useEditorStore } from './editorStore.js'
@@ -41,12 +40,10 @@ export const getLayoutAnalysis = memoizeLast((room, items, settings) =>
   analyzeLayout(room, items, settings, { getProfile: getItemProfile }),
 )
 
-/** Métricas para a barra inferior. */
+/** Métricas para a barra inferior (o «ocupado» é o mesmo da comparação). */
 export function computeLayoutMetrics(room, items, settings) {
   const analysis = getLayoutAnalysis(room, items, settings)
-  const occupied = items
-    .filter((item) => !item.elevation)
-    .reduce((sum, item) => sum + shapeArea(item.dimensions, getItemProfile(item).shape), 0)
+  const occupied = blockedFloorArea(items, getItemProfile)
   return {
     roomArea: roomArea(room),
     occupiedArea: occupied,

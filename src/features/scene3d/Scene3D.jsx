@@ -45,6 +45,7 @@ export default function Scene3D() {
         dpr={[1, 2]}
         camera={{ fov: 40, near: 0.05, far: 200, position: [center[0] + 6, 6, center[2] + 8] }}
         onPointerMissed={(e) => e.button === 0 && selectItem(null)}
+        role="img"
         aria-label="Vista 3D da divisão"
       >
         <color attach="background" args={[SCENE_BACKGROUND]} />
