@@ -6,6 +6,7 @@ import {
   SCHEMA_VERSION,
 } from './constants.js'
 import { ACCESSIBILITY_PROFILES } from './accessibility.js'
+import { ROUTE_LIMITS, ROUTE_STEP_TYPES } from './route.js'
 import { OPENING_LIMITS, OPENING_TYPES, WALL_SIDES, wallFrame } from './openings.js'
 
 /**
@@ -79,6 +80,25 @@ function validateRoom(room, fail) {
       ids.add(opening.id)
     }
   })
+  validateRoute(room.route, room, fail)
+}
+
+function validateRoute(route, room, fail) {
+  if (route === undefined) return
+  if (!isObject(route) || !Array.isArray(route.steps)) return fail('room.route', 'Caminho de entrega inválido.')
+  if (route.steps.length > ROUTE_LIMITS.steps) fail('room.route.steps', `Máximo de ${ROUTE_LIMITS.steps} passos no caminho.`)
+  route.steps.forEach((step, i) => {
+    const path = `room.route.steps[${i}]`
+    if (!isObject(step)) return fail(path, 'Passo do caminho inválido.')
+    if (!isNonEmptyString(step.id)) fail(`${path}.id`, 'Falta o identificador do passo.')
+    if (!(step.type in ROUTE_STEP_TYPES)) fail(`${path}.type`, 'Tipo de passo desconhecido.')
+    if (!isNonEmptyString(step.label)) fail(`${path}.label`, 'O passo tem de ter um nome.')
+    checkRange(step.width, ROUTE_LIMITS.width, `${path}.width`, 'Largura do passo', fail)
+    checkRange(step.height, ROUTE_LIMITS.height, `${path}.height`, 'Altura do passo', fail)
+    if (step.widthAfter !== undefined) checkRange(step.widthAfter, ROUTE_LIMITS.width, `${path}.widthAfter`, 'Largura depois da curva', fail)
+  })
+  if (route.entryDoorId !== null && !(room.openings ?? []).some((o) => o.id === route.entryDoorId && o.type === 'door'))
+    fail('room.route.entryDoorId', 'A porta de entrada não existe na divisão.')
 }
 
 function validateOpening(opening, room, path, fail) {

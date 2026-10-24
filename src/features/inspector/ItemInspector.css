@@ -157,3 +157,7 @@
   background: var(--color-surface-sunken);
   color: var(--color-text-muted);
 }
+
+.item-inspector__delivery {
+  width: 100%;
+}

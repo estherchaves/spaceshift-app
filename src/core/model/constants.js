@@ -58,6 +58,7 @@ export const DEFAULT_ROOM = {
   floorMaterial: 'oak',
   floorColor: FLOOR_MATERIALS.oak.color,
   openings: [],
+  route: { steps: [], entryDoorId: null },
 }
 
 export const DEFAULT_SETTINGS = {

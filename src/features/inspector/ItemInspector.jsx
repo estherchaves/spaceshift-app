@@ -1,4 +1,5 @@
-import { Copy, Lock, LockOpen, RotateCcw, RotateCw, Trash2 } from 'lucide-react'
+import { Copy, Lock, LockOpen, RotateCcw, RotateCw, Trash2, Truck } from 'lucide-react'
+import { useState } from 'react'
 import { Button, ColorField, FieldGrid, IconButton, NumberField, PanelSection } from '@/components/ui'
 import { DEFAULT_SIZE_BOUNDS, FURNITURE_CATEGORIES, LIMITS } from '@/core/model'
 import { getCatalogEntry, getSizeBounds } from '@/data/catalog/furniture.js'
@@ -7,6 +8,7 @@ import { deleteSelected, duplicateSelected, rotateSelected, toggleLockSelected }
 import { IssueList } from '@/features/analysis/IssueList.jsx'
 import { useProjectStore } from '@/store/projectStore.js'
 import { useLayoutAnalysis } from '@/store/selectors.js'
+import { DeliveryDialog } from '@/features/delivery/DeliveryDialog.jsx'
 import { FinishPicker } from './FinishPicker.jsx'
 import './ItemInspector.css'
 
@@ -28,6 +30,7 @@ export function ItemInspector({ item }) {
   const elevated = (entry?.elevation ?? 0) > 0 || item.elevation > 0
   const analysis = useLayoutAnalysis()
   const issues = analysis.issues.filter((issue) => issue.itemIds.includes(item.id))
+  const [deliveryOpen, setDeliveryOpen] = useState(false)
 
   return (
     <div className="item-inspector" data-locked={locked || undefined}>
@@ -108,12 +111,17 @@ export function ItemInspector({ item }) {
             onCommit={(value) => update({ elevation: value / 100 })}
           />
         )}
+        <Button icon={Truck} className="item-inspector__delivery" onClick={() => setDeliveryOpen(true)}>
+          Passa pela porta?
+        </Button>
         <p className="item-inspector__hint">
           {['width', 'depth', 'height'].every(fixed)
             ? 'Este modelo tem medidas fixas.'
             : 'Também pode redimensionar com as pegas na planta, dentro dos limites do modelo.'}
         </p>
       </PanelSection>
+
+      {deliveryOpen && <DeliveryDialog open onClose={() => setDeliveryOpen(false)} item={item} />}
 
       <PanelSection title="Acabamento">
         {finishes.length > 0 && (

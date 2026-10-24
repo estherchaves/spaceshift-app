@@ -14,6 +14,7 @@ export function createRoom(overrides = {}) {
     depth: preset.depth,
     ...overrides,
     openings: overrides.openings ? [...overrides.openings] : [],
+    route: overrides.route ? { ...overrides.route, steps: [...(overrides.route.steps ?? [])] } : { steps: [], entryDoorId: null },
     type,
   }
 }

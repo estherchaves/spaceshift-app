@@ -3,11 +3,13 @@ import {
   addItem,
   addLayout,
   applyOpeningPatch,
+  applyRouteStepPatch,
   applyRoomPatch,
   applySettingsPatch,
   createFurnitureItem,
   createOpening,
   createProject,
+  createRouteStep,
   DEFAULT_SIZE_BOUNDS,
   duplicateItem,
   findItem,
@@ -18,6 +20,7 @@ import {
   removeItem,
   removeLayout,
   renameLayout,
+  ROUTE_LIMITS,
   sanitizeProjectName,
   setActiveLayout,
   updateItem,
@@ -91,6 +94,16 @@ export const useProjectStore = create((set, get) => {
       }
     })
 
+  const changeRoute = (recipe, label) =>
+    change(
+      (project) => {
+        const current = project.room.route ?? { steps: [], entryDoorId: null }
+        const route = recipe(current)
+        return route === current ? project : { ...project, room: { ...project.room, route } }
+      },
+      { label },
+    )
+
   /** Anular/refazer: troca o documento por um instantâneo do histórico. */
   const travel = (step) =>
     set((state) => {
@@ -162,10 +175,49 @@ export const useProjectStore = create((set, get) => {
         (project) => {
           const openings = project.room.openings ?? []
           if (!openings.some((o) => o.id === id)) return project
-          return { ...project, room: { ...project.room, openings: openings.filter((o) => o.id !== id) } }
+          const route = project.room.route?.entryDoorId === id ? { ...project.room.route, entryDoorId: null } : project.room.route
+          return { ...project, room: { ...project.room, openings: openings.filter((o) => o.id !== id), route } }
         },
         { label: `Eliminar ${openingLabels(get().project.room.openings ?? []).get(id)?.toLowerCase() ?? 'abertura'}` },
       ),
+
+    /** Caminho de entrega (o que o móvel atravessa até à divisão). */
+    addRouteStep: (type) => {
+      const route = get().project.room.route ?? { steps: [], entryDoorId: null }
+      if (route.steps.length >= ROUTE_LIMITS.steps) return null
+      const step = createRouteStep(type)
+      changeRoute((r) => ({ ...r, steps: [...r.steps, step] }), `Acrescentar ${step.label.toLowerCase()} ao caminho`)
+      return step.id
+    },
+
+    updateRouteStep: (id, patch) =>
+      changeRoute((r) => {
+        const index = r.steps.findIndex((s) => s.id === id)
+        if (index === -1) return r
+        const next = applyRouteStepPatch(r.steps[index], patch)
+        if (Object.keys(next).every((key) => next[key] === r.steps[index][key])) return r
+        return { ...r, steps: r.steps.with(index, next) }
+      }, 'Alterar o caminho de entrega'),
+
+    removeRouteStep: (id) =>
+      changeRoute((r) => (r.steps.some((s) => s.id === id) ? { ...r, steps: r.steps.filter((s) => s.id !== id) } : r), 'Retirar um passo do caminho'),
+
+    moveRouteStep: (id, delta) =>
+      changeRoute((r) => {
+        const from = r.steps.findIndex((s) => s.id === id)
+        const to = from + delta
+        if (from === -1 || to < 0 || to >= r.steps.length) return r
+        const steps = [...r.steps]
+        const [step] = steps.splice(from, 1)
+        steps.splice(to, 0, step)
+        return { ...r, steps }
+      }, 'Reordenar o caminho de entrega'),
+
+    setEntryDoor: (openingId) =>
+      changeRoute((r) => {
+        const valid = get().project.room.openings?.some((o) => o.id === openingId && o.type === 'door')
+        return valid && r.entryDoorId !== openingId ? { ...r, entryDoorId: openingId } : r
+      }, 'Mudar a porta de entrada'),
 
     updateSettings: (patch) =>
       change(

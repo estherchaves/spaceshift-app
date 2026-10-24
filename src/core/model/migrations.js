@@ -5,13 +5,14 @@ import { SCHEMA_VERSION } from './constants.js'
  * projeto na versão seguinte. Ao criar o esquema v2, adiciona-se
  * `1: (p) => ({ ...p, schemaVersion: 2, ...novosCampos })`.
  *
- * v1 → v2 (Fase 9): portas e janelas na divisão e perfil de acessibilidade.
+ * v1 → v2 (Fase 9): portas e janelas na divisão, caminho de entrega e
+ * perfil de acessibilidade.
  */
 export const MIGRATIONS = {
   1: (p) => ({
     ...p,
     schemaVersion: 2,
-    room: p.room && typeof p.room === 'object' ? { ...p.room, openings: [] } : p.room,
+    room: p.room && typeof p.room === 'object' ? { ...p.room, openings: [], route: { steps: [], entryDoorId: null } } : p.room,
     settings: p.settings && typeof p.settings === 'object' ? { accessibility: 'none', ...p.settings } : p.settings,
   }),
 }

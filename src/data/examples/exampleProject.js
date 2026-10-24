@@ -1,4 +1,4 @@
-import { createFurnitureItem, createLayout, createOpening, createProject } from '@/core/model'
+import { applyRouteStepPatch, createFurnitureItem, createLayout, createOpening, createProject, createRouteStep } from '@/core/model'
 import { getCatalogEntry } from '@/data/catalog/furniture.js'
 
 /*
@@ -21,7 +21,13 @@ export function createExampleProject() {
   // Porta de entrada na parede de baixo, à direita do sofá, e janela à esquerda.
   const door = createOpening(project.room, 'door', { wall: 'bottom', preferred: 4.15, hinge: 'end' })
   const win = createOpening({ ...project.room, openings: [door] }, 'window', { wall: 'left', preferred: 2.4 })
-  project.room = { ...project.room, openings: [door, win] }
+  // Caminho de entrega de um 2.º andar: porta do prédio, escada com patamar e corredor com curva.
+  const route = [
+    applyRouteStepPatch(createRouteStep('door'), { label: 'Porta do prédio', width: 1.0, height: 2.1 }),
+    applyRouteStepPatch(createRouteStep('stairs'), { label: 'Escada', width: 1.0, height: 2.1, turn: true }),
+    applyRouteStepPatch(createRouteStep('corridor'), { label: 'Corredor', width: 1.0, widthAfter: 1.0, height: 2.5, turn: true }),
+  ]
+  project.room = { ...project.room, openings: [door, win], route: { steps: route, entryDoorId: door.id } }
 
   const facingTv = createLayout('Sofá virado para a TV', [
     place('rug', 2.6, 2.55, 0, { dimensions: { width: 2.4, depth: 1.7, height: 0.01 } }),
