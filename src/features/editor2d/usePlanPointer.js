@@ -106,7 +106,11 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
     const { project } = useProjectStore.getState()
     const editor = useEditorStore.getState()
 
-    if (e.button === 1 || spaceDown.current || !target) {
+    if (editor.walkTool && e.button === 0 && !spaceDown.current) {
+      // Percurso a pé: um clique marca um ponto; arrastar desloca a planta.
+      const inside = { x: Math.min(Math.max(world.x, 0), project.room.width), z: Math.min(Math.max(world.z, 0), project.room.depth) }
+      gesture.current = { type: 'pan', start: screen, last: screen, moved: false, walkPoint: inside }
+    } else if (e.button === 1 || spaceDown.current || !target) {
       gesture.current = { type: 'pan', start: screen, last: screen, moved: false }
     } else if (target.dataset.openingId) {
       const opening = project.room.openings?.find((o) => o.id === target.dataset.openingId)
@@ -135,7 +139,7 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
     // passamos o foco ao móvel clicado (para o teclado atuar nele) ou largamos
     // o foco de botões/campos quando se clica no fundo.
     e.preventDefault()
-    const focusTarget = target?.closest('[data-item-id], [data-opening-id]')
+    const focusTarget = editor.walkTool ? null : target?.closest('[data-item-id], [data-opening-id]')
     if (focusTarget) focusTarget.focus({ preventScroll: true })
     else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur?.()
     svgRef.current.setPointerCapture?.(e.pointerId)
@@ -216,7 +220,8 @@ export function usePlanPointer({ svgRef, viewport, pan, zoomBy }) {
       const preview = editor.interaction?.openingId === g.opening.id ? editor.interaction.preview : null
       if (preview) useProjectStore.getState().updateOpening(g.opening.id, preview)
     } else if (commit) {
-      if (g.type === 'pan' && !g.moved) editor.selectItem(null)
+      if (g.type === 'pan' && !g.moved && g.walkPoint) editor.addWalkPoint(g.walkPoint)
+      else if (g.type === 'pan' && !g.moved) editor.selectItem(null)
       const preview = editor.interaction?.itemId === g.item?.id ? editor.interaction?.preview : null
       if (preview) useProjectStore.getState().updateItem(g.item.id, preview)
     }

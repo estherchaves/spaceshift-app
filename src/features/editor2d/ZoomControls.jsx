@@ -1,10 +1,10 @@
-import { Footprints, Magnet, Maximize, Minus, Plus } from 'lucide-react'
+import { Footprints, Magnet, Maximize, Minus, Plus, Route } from 'lucide-react'
 import { IconButton } from '@/components/ui'
 
 export const ZOOM_STEP = 1.25
 
-/** Controlos flutuantes da planta: zoom, enquadrar, snap e zona de circulação. */
-export function ZoomControls({ zoomPercent, onZoomIn, onZoomOut, onFit, snap, onToggleSnap, circulation, onToggleCirculation }) {
+/** Controlos flutuantes da planta: zoom, enquadrar, snap, zona de circulação e percurso a pé. */
+export function ZoomControls({ zoomPercent, onZoomIn, onZoomOut, onFit, snap, onToggleSnap, circulation, onToggleCirculation, walk, onToggleWalk }) {
   return (
     <div className="plan-toolbar" role="toolbar" aria-label="Vista da planta">
       <IconButton icon={Minus} label="Afastar" shortcut="−" size="sm" tooltipPlacement="top" onClick={onZoomOut} />
@@ -30,10 +30,20 @@ export function ZoomControls({ zoomPercent, onZoomIn, onZoomOut, onFit, snap, on
         shortcut="C"
         size="sm"
         tooltipPlacement="top"
-        tooltipAlign="end"
         aria-pressed={circulation}
         className="plan-toolbar__snap"
         onClick={onToggleCirculation}
+      />
+      <IconButton
+        icon={Route}
+        label={walk ? 'Fechar percurso a pé' : 'Percurso a pé entre dois pontos'}
+        shortcut="P"
+        size="sm"
+        tooltipPlacement="top"
+        tooltipAlign="end"
+        aria-pressed={Boolean(walk)}
+        className="plan-toolbar__snap"
+        onClick={onToggleWalk}
       />
     </div>
   )

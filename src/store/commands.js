@@ -77,8 +77,10 @@ export function toggleLockSelected() {
   project().updateItem(item.id, { locked: !item.locked })
 }
 
+/** Escape: sai do percurso a pé, se estiver ativo; senão, larga a seleção. */
 export function clearSelection() {
-  editor().selectItem(null)
+  if (editor().walkTool) editor().setWalkTool(false)
+  else editor().selectItem(null)
 }
 
 /** Acrescenta uma porta ou janela e seleciona-a. Devolve o id, ou null se as paredes estiverem cheias. */

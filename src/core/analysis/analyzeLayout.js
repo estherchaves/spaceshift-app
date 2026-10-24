@@ -345,6 +345,8 @@ export function analyzeLayout(room, items, settings, { getProfile = () => ({}) }
     },
     // Círculo livre para rodar (modo de acessibilidade), para desenhar.
     turning: openingResult.turning,
+    // Formas que impedem a passagem (para o percurso a pé).
+    obstacles,
   }
 }
 

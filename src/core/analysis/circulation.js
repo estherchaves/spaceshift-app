@@ -22,17 +22,17 @@ export function cellSizeFor(room) {
 }
 
 /**
+ * Folga de cada célula: distância (m) do centro da célula à parede ou ao
+ * obstáculo mais próximo. É a base da circulação e do percurso a pé.
  * @param {{width:number, depth:number}} room
  * @param {Array<Array<{x:number,z:number}[]>>} obstacles  formas (listas de polígonos)
- * @param {number} passage  largura mínima de passagem (m)
  */
-export function buildCirculationGrid(room, obstacles, passage) {
+export function buildClearanceField(room, obstacles) {
   const cell = cellSizeFor(room)
   const cols = Math.max(1, Math.floor(room.width / cell + 1e-9))
   const rows = Math.max(1, Math.floor(room.depth / cell + 1e-9))
   const offsetX = (room.width - cols * cell) / 2
   const offsetZ = (room.depth - rows * cell) / 2
-  const radius = passage / 2 - cell / 2
   const centre = (i, j) => ({ x: offsetX + (i + 0.5) * cell, z: offsetZ + (j + 0.5) * cell })
 
   // Rasterização dos obstáculos (só as células da caixa de cada móvel).
@@ -57,7 +57,7 @@ export function buildCirculationGrid(room, obstacles, passage) {
   }
   squaredDistanceTransform(field, cols, rows)
 
-  const walkable = new Uint8Array(cols * rows)
+  const clearance = new Float64Array(cols * rows)
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
       const k = j * cols + i
@@ -65,13 +65,25 @@ export function buildCirculationGrid(room, obstacles, passage) {
       const wall = Math.min(p.x, room.width - p.x, p.z, room.depth - p.z)
       // field está em células². A rasterização engorda os móveis até meia
       // célula, por isso a folga real é a distância entre centros + meia célula.
-      const clear = Math.sqrt(field[k]) * cell + half
-      walkable[k] = wall >= radius && clear >= radius ? 1 : 0
+      clearance[k] = Math.min(wall, Math.sqrt(field[k]) * cell + half)
     }
   }
+  return { cell, cols, rows, offsetX, offsetZ, centre, clearance }
+}
 
+/**
+ * @param {{width:number, depth:number}} room
+ * @param {Array<Array<{x:number,z:number}[]>>} obstacles  formas (listas de polígonos)
+ * @param {number} passage  largura mínima de passagem (m)
+ */
+export function buildCirculationGrid(room, obstacles, passage) {
+  const field = buildClearanceField(room, obstacles)
+  const { cell, cols, rows, clearance } = field
+  const radius = passage / 2 - cell / 2
+  const walkable = new Uint8Array(cols * rows)
+  for (let k = 0; k < walkable.length; k++) walkable[k] = clearance[k] >= radius ? 1 : 0
   const { labels, zones } = labelZones(walkable, cols, rows, cell)
-  return { cell, cols, rows, offsetX, offsetZ, radius, walkable, labels, zones, centre }
+  return { ...field, radius, walkable, labels, zones }
 }
 
 /** Intervalo em X ocupado por um polígono convexo na faixa z ∈ [z0, z1] (ou null). */

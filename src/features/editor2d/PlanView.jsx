@@ -18,6 +18,8 @@ import { PlanItem } from './PlanItem.jsx'
 import { gridLines, scaleBarLength, toScreen } from './planGeometry.js'
 import { SelectionOverlay } from './SelectionOverlay.jsx'
 import { usePlanPointer } from './usePlanPointer.js'
+import { useWalkingPath } from './useWalkingPath.js'
+import { WalkLayer, WalkPanel } from './WalkLayer.jsx'
 import { useViewport } from './useViewport.js'
 import { ZOOM_STEP, ZoomControls } from './ZoomControls.jsx'
 import './PlanView.css'
@@ -45,6 +47,9 @@ export function PlanView() {
   const setShowCirculation = useEditorStore((state) => state.setShowCirculation)
   const focusedIssueId = useEditorStore((state) => state.focusedIssueId)
   const analysisOpen = useEditorStore((state) => state.analysisOpen)
+  const walkTool = useEditorStore((state) => state.walkTool)
+  const walkPoints = useEditorStore((state) => state.walkPoints)
+  const setWalkTool = useEditorStore((state) => state.setWalkTool)
   const { viewport, zoomBy, pan, fit, zoomPercent } = useViewport(room, size)
   const pointer = usePlanPointer({ svgRef, viewport, pan, zoomBy })
   const [dropPoint, setDropPoint] = useState(null)
@@ -52,6 +57,7 @@ export function PlanView() {
   const analysis = getLayoutAnalysis(room, items, settings)
   const selected = items.find((item) => item.id === selectedId) ?? null
   const dragEntry = catalogDragId ? getCatalogEntry(catalogDragId) : null
+  const walkPath = useWalkingPath(room, analysis, settings)
 
   useKeyboardShortcuts([
     { key: ['+', '='], handler: () => zoomBy(ZOOM_STEP) },
@@ -59,6 +65,7 @@ export function PlanView() {
     { key: '0', handler: fit },
     { key: 'g', handler: () => updateSettings({ snapToGrid: !settings.snapToGrid }) },
     { key: 'c', handler: () => setShowCirculation(!showCirculation) },
+    { key: 'p', handler: () => setWalkTool(!walkTool) },
   ])
 
   const worldFromClient = (event) => {
@@ -93,6 +100,7 @@ export function PlanView() {
       className="plan-view"
       data-interaction={interaction?.type}
       data-dragging-catalog={dragEntry ? true : undefined}
+      data-walk-tool={walkTool || undefined}
       {...dropProps}
     >
       {viewport && (
@@ -133,6 +141,7 @@ export function PlanView() {
             panelOpen={analysisOpen}
           />
           {analysis.turning && <TurningCircle turning={analysis.turning} viewport={viewport} />}
+          {walkTool && <WalkLayer points={walkPoints} path={walkPath} viewport={viewport} />}
           {selected && (
             <SelectionOverlay
               item={selected}
@@ -146,7 +155,9 @@ export function PlanView() {
         </svg>
       )}
 
-      {items.length === 0 && !dragEntry && (
+      {walkTool && <WalkPanel points={walkPoints} path={walkPath} onClose={() => setWalkTool(false)} />}
+
+      {items.length === 0 && !dragEntry && !walkTool && (
         <div className="plan-hint">
           <MousePointerClick size={16} strokeWidth={1.75} aria-hidden="true" />
           Arraste um móvel do catálogo para a planta ou use o botão +.
@@ -162,6 +173,8 @@ export function PlanView() {
         onToggleSnap={() => updateSettings({ snapToGrid: !settings.snapToGrid })}
         circulation={showCirculation}
         onToggleCirculation={() => setShowCirculation(!showCirculation)}
+        walk={walkTool}
+        onToggleWalk={() => setWalkTool(!walkTool)}
       />
     </div>
   )

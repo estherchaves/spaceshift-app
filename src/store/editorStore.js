@@ -14,6 +14,8 @@ import { create } from 'zustand'
  *  - showCirculation: mostrar a zona de circulação na planta
  *  - focusedIssueId: problema realçado nas vistas (escolhido no painel)
  *  - compareOpen: comparação de disposições lado a lado aberta
+ *  - walkTool: ferramenta «percurso a pé» ativa (cliques na planta marcam pontos)
+ *  - walkPoints: origem e destino do percurso (0, 1 ou 2 pontos, em metros)
  */
 const initialState = {
   viewMode: '2d',
@@ -26,6 +28,8 @@ const initialState = {
   showCirculation: false,
   focusedIssueId: null,
   compareOpen: false,
+  walkTool: false,
+  walkPoints: [],
 }
 
 export const useEditorStore = create((set) => ({
@@ -41,6 +45,9 @@ export const useEditorStore = create((set) => ({
   setAnalysisOpen: (analysisOpen) => set(analysisOpen ? { analysisOpen } : { analysisOpen, focusedIssueId: null }),
   setShowCirculation: (showCirculation) => set({ showCirculation }),
   setFocusedIssue: (focusedIssueId) => set({ focusedIssueId }),
+  setWalkTool: (walkTool) => set(walkTool ? { walkTool, selectedItemId: null, selectedOpeningId: null } : { walkTool, walkPoints: [] }),
+  /** Um clique marca a origem, o seguinte o destino; o terceiro recomeça. */
+  addWalkPoint: (point) => set((state) => ({ walkPoints: state.walkPoints.length === 1 ? [state.walkPoints[0], point] : [point] })),
   setCompareOpen: (compareOpen) => set(compareOpen ? { compareOpen, interaction: null } : { compareOpen }),
 }))
 

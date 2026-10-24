@@ -305,3 +305,97 @@
   font-size: 11px;
   font-weight: var(--weight-semibold);
 }
+
+.plan-view[data-walk-tool] .plan-svg {
+  cursor: crosshair;
+}
+
+.plan-walk {
+  pointer-events: none;
+}
+
+.plan-walk__path {
+  fill: none;
+  stroke: var(--color-focus);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 7 5;
+}
+
+.plan-walk__marker circle {
+  fill: var(--color-focus);
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.plan-walk__marker text {
+  fill: #fff;
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+}
+
+.plan-walk__narrow line {
+  stroke: var(--color-focus);
+  stroke-width: 1.5;
+}
+
+.plan-walk__narrow circle {
+  fill: var(--color-focus);
+}
+
+.plan-walk__narrow rect {
+  fill: var(--color-focus);
+}
+
+.plan-walk__narrow text {
+  fill: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+}
+
+.plan-walk__narrow[data-tight] line,
+.plan-walk__narrow[data-tight] circle,
+.plan-walk__narrow[data-tight] rect {
+  stroke: var(--color-danger);
+  fill: var(--color-danger);
+}
+
+.plan-walk-panel {
+  position: absolute;
+  right: var(--space-3);
+  bottom: 64px;
+  left: var(--space-3);
+  display: flex;
+  width: fit-content;
+  margin: 0 auto;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 560px;
+  padding: 4px 4px 4px var(--space-3);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  color: var(--color-focus);
+  font-size: var(--text-sm);
+  line-height: 1.35;
+}
+
+.plan-walk-panel span {
+  flex: 1;
+  color: var(--color-text);
+}
+
+.plan-walk-panel svg {
+  flex: none;
+}
+
+.plan-walk-panel[data-state='warn'] {
+  color: var(--color-warning);
+}
+
+.plan-walk-panel[data-state='fail'] {
+  color: var(--color-danger);
+}
