@@ -1,0 +1,115 @@
+.dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgb(29 31 34 / 0.32);
+  backdrop-filter: blur(2px);
+  animation: dialog-fade var(--duration-base) var(--ease-out);
+}
+
+.dialog__panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100dvh - 2 * var(--space-4));
+  overflow: auto;
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 24px 60px -20px rgb(20 20 20 / 0.35), var(--shadow-sm);
+  animation: dialog-rise var(--duration-base) var(--ease-out);
+  outline: none;
+}
+
+.dialog__panel--sm {
+  max-width: 400px;
+}
+
+.dialog__panel--md {
+  max-width: 520px;
+}
+
+.dialog__panel--lg {
+  max-width: 680px;
+}
+
+.dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) 0;
+}
+
+.dialog__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.dialog__close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: -6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-subtle);
+}
+
+.dialog__close:hover {
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+}
+
+.dialog__description {
+  padding: var(--space-2) var(--space-5) 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-md);
+}
+
+.dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-top: var(--border);
+  background: var(--color-surface-muted);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.dialog__description + .dialog__footer {
+  margin-top: var(--space-5);
+}
+
+@keyframes dialog-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .dialog__panel {
+    animation: none;
+  }
+}

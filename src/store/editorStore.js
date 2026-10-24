@@ -12,6 +12,7 @@ import { create } from 'zustand'
  *  - analysisOpen: painel de análise (colisões e circulação) aberto
  *  - showCirculation: mostrar a zona de circulação na planta
  *  - focusedIssueId: problema realçado nas vistas (escolhido no painel)
+ *  - compareOpen: comparação de disposições lado a lado aberta
  */
 const initialState = {
   viewMode: '2d',
@@ -22,6 +23,7 @@ const initialState = {
   analysisOpen: false,
   showCirculation: false,
   focusedIssueId: null,
+  compareOpen: false,
 }
 
 export const useEditorStore = create((set) => ({
@@ -36,6 +38,7 @@ export const useEditorStore = create((set) => ({
   setAnalysisOpen: (analysisOpen) => set(analysisOpen ? { analysisOpen } : { analysisOpen, focusedIssueId: null }),
   setShowCirculation: (showCirculation) => set({ showCirculation }),
   setFocusedIssue: (focusedIssueId) => set({ focusedIssueId }),
+  setCompareOpen: (compareOpen) => set(compareOpen ? { compareOpen, interaction: null } : { compareOpen }),
 }))
 
 export function resetEditorStore() {

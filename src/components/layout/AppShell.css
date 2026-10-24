@@ -43,6 +43,21 @@
   min-width: 0;
 }
 
+/* Camada de largura total (comparação): tapa os três painéis. */
+.app-shell__overlay {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  z-index: 5;
+  min-height: 0;
+  border-top: 0;
+}
+
+.app-shell[data-overlay] .app-shell__left,
+.app-shell[data-overlay] .app-shell__main,
+.app-shell[data-overlay] .app-shell__right {
+  visibility: hidden;
+}
+
 /* Tablet e telemóvel: um painel de cada vez, escolhido na barra de separadores. */
 @media (max-width: 899px) {
   .app-shell {
@@ -74,5 +89,14 @@
   .app-shell:not([data-mobile-panel='plan']) .app-shell__main,
   .app-shell:not([data-mobile-panel='properties']) .app-shell__right {
     display: none;
+  }
+
+  .app-shell__overlay {
+    grid-row: 2 / 4;
+    grid-column: 1;
+  }
+
+  .app-shell[data-overlay] .app-shell__mobile-nav {
+    visibility: hidden;
   }
 }

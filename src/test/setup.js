@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterEach, beforeEach } from 'vitest'
+import { createLocalStorageRepository, createMemoryStorage, setRepository } from '@/services/persistence'
+
+// Cada teste tem um repositório de projetos novo, em memória.
+beforeEach(() => {
+  setRepository(createLocalStorageRepository({ storage: createMemoryStorage() }))
+})
 
 afterEach(() => {
   cleanup()

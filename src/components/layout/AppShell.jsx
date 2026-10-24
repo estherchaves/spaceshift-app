@@ -3,10 +3,12 @@ import './AppShell.css'
 /**
  * Grelha principal do editor. Em desktop mostra todos os painéis; em ecrãs
  * estreitos mostra só o painel ativo (`mobilePanel`), escolhido em `mobileNav`.
+ * `overlay` (ex.: comparação de disposições) ocupa a largura toda entre a
+ * barra de topo e a barra inferior; os painéis ficam montados por baixo.
  */
-export function AppShell({ topBar, mobileNav, left, main, right, statusBar, mobilePanel }) {
+export function AppShell({ topBar, mobileNav, left, main, right, statusBar, mobilePanel, overlay = null }) {
   return (
-    <div className="app-shell" data-mobile-panel={mobilePanel}>
+    <div className="app-shell" data-mobile-panel={mobilePanel} data-overlay={overlay ? true : undefined}>
       <div className="app-shell__top">{topBar}</div>
       <div className="app-shell__mobile-nav">{mobileNav}</div>
       <div className="app-shell__left" data-panel="catalog">
@@ -18,6 +20,7 @@ export function AppShell({ topBar, mobileNav, left, main, right, statusBar, mobi
       <div className="app-shell__right" data-panel="properties">
         {right}
       </div>
+      {overlay && <div className="app-shell__overlay">{overlay}</div>}
       <div className="app-shell__status">{statusBar}</div>
     </div>
   )

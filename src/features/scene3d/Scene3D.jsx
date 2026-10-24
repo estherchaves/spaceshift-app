@@ -7,6 +7,7 @@ import { useProjectStore } from '@/store/projectStore.js'
 import { getLayoutAnalysis, selectRoom, selectSettings, useDisplayedItems } from '@/store/selectors.js'
 import { Analysis3D } from './Analysis3D.jsx'
 import { CameraRig } from './CameraRig.jsx'
+import { CaptureBridge } from './CaptureBridge.jsx'
 import { Furniture3D } from './Furniture3D.jsx'
 import { Room3D } from './room/Room3D.jsx'
 import { SceneToolbar } from './SceneToolbar.jsx'
@@ -107,6 +108,7 @@ export default function Scene3D() {
           zoomSpeed={0.8}
         />
         <CameraRig room={room} request={viewRequest} />
+        <CaptureBridge />
       </Canvas>
       <SceneToolbar onView={requestView} />
       <p className="scene3d__hint" aria-hidden="true">

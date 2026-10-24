@@ -80,3 +80,10 @@
 .btn__icon {
   flex: none;
 }
+
+.btn--danger-solid {
+  --btn-bg: var(--color-danger);
+  --btn-fg: #ffffff;
+  --btn-border: var(--color-danger);
+  --btn-bg-hover: #a2372f;
+}

@@ -27,12 +27,13 @@ describe('EditorPage: estrutura', () => {
     expect(statusBar().getByText('Sem problemas')).toBeInTheDocument()
   })
 
-  it('ações de fases seguintes estão desativadas e explicam porquê', () => {
+  it('Guardar, Anular e Refazer começam desativados e explicam porquê', () => {
     render(<EditorPage />)
     const save = screen.getByRole('button', { name: /Guardar/ })
     expect(save).toHaveAttribute('aria-disabled', 'true')
-    expect(save).toHaveAccessibleDescription(/Fase 7/)
-    expect(screen.getByRole('button', { name: 'Anular' })).toHaveAccessibleDescription(/Fase 7/)
+    expect(save).toHaveAccessibleDescription('Tudo guardado')
+    expect(screen.getByRole('button', { name: 'Anular' })).toHaveAccessibleDescription('Nada para anular')
+    expect(screen.getByRole('button', { name: 'Refazer' })).toHaveAccessibleDescription('Nada para refazer')
   })
 })
 

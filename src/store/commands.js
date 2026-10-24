@@ -96,3 +96,43 @@ export function applyIssueFix(issue) {
   editor().selectItem(item.id)
   return true
 }
+
+/** Depois de anular/refazer/trocar de disposição, a seleção pode já não existir. */
+function reconcileSelection() {
+  const id = editor().selectedItemId
+  if (id && !findItem(project().project, id)) editor().selectItem(null)
+  editor().setFocusedIssue(null)
+}
+
+/** Anula a última alteração. Ignorado durante um gesto (o gesto ainda não chegou ao documento). */
+export function undoChange() {
+  if (editor().interaction) return false
+  project().undo()
+  reconcileSelection()
+  return true
+}
+
+export function redoChange() {
+  if (editor().interaction) return false
+  project().redo()
+  reconcileSelection()
+  return true
+}
+
+export function switchLayout(layoutId) {
+  project().setActiveLayout(layoutId)
+  editor().selectItem(null)
+}
+
+/** Nova disposição: cópia da atual (por omissão) ou vazia. */
+export function createLayout({ copyCurrent = true } = {}) {
+  const fromLayoutId = copyCurrent ? project().project.activeLayoutId : null
+  const id = project().addLayout({ fromLayoutId })
+  if (id) editor().selectItem(null)
+  return id
+}
+
+export function deleteLayout(layoutId) {
+  project().removeLayout(layoutId)
+  reconcileSelection()
+}

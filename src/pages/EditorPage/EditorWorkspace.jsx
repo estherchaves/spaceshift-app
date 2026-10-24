@@ -1,5 +1,6 @@
 import { SegmentedControl } from '@/components/ui'
 import { AnalysisPanel } from '@/features/analysis/AnalysisPanel.jsx'
+import { LayoutBar } from '@/features/layouts/LayoutBar.jsx'
 import { PlanView } from '@/features/editor2d/PlanView.jsx'
 import { SceneView } from '@/features/scene3d/SceneView.jsx'
 import { useEditorStore } from '@/store/editorStore.js'
@@ -28,6 +29,7 @@ export function EditorWorkspace() {
           options={VIEW_MODE_OPTIONS}
         />
       </div>
+      <LayoutBar />
       <div className="workspace__main">
       <div className="workspace__panes">
         {viewMode !== '3d' && (

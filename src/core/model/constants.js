@@ -38,6 +38,8 @@ export const LIMITS = {
   wallHeight: { min: 2, max: 6 },
   wallThickness: { min: 0.05, max: 0.6 },
   item: { min: 0.05, max: 10 },
+  // Tapetes e outros revestimentos têm 1 cm de altura.
+  itemHeight: { min: 0.01, max: 10 },
   elevation: { min: 0, max: 5 },
   gridSize: { min: 0.01, max: 1 },
   circulationMin: { min: 0.3, max: 2 },

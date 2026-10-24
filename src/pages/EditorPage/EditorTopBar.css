@@ -55,8 +55,34 @@
   transition: background-color var(--duration-base) var(--ease-out);
 }
 
-.save-status[data-dirty] .save-status__dot {
+.save-status[data-status='unsaved'] .save-status__dot {
   background: var(--color-warning);
+}
+
+.save-status__icon {
+  flex: none;
+}
+
+.save-status[data-status='saved'] .save-status__icon {
+  color: var(--color-success);
+}
+
+.save-status[data-status='saving'] .save-status__icon {
+  animation: save-spin 0.9s linear infinite;
+}
+
+.save-status[data-status='error'] {
+  color: var(--color-danger);
+}
+
+@keyframes save-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.topbar__back {
+  margin-right: -2px;
 }
 
 @media (max-width: 1279px) {
@@ -85,6 +111,12 @@
   .topbar__save {
     width: var(--control-h);
     padding: 0;
+  }
+}
+
+@media (max-width: 599px) {
+  .topbar .logo {
+    display: none;
   }
 }
 

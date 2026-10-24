@@ -13,7 +13,7 @@ import { createId } from './ids.js'
 export const OUTSIDE_MARGIN = 2
 
 export const DEFAULT_SIZE_BOUNDS = {
-  min: { width: LIMITS.item.min, depth: LIMITS.item.min, height: 0.01 },
+  min: { width: LIMITS.item.min, depth: LIMITS.item.min, height: LIMITS.itemHeight.min },
   max: { width: LIMITS.item.max, depth: LIMITS.item.max, height: LIMITS.item.max },
 }
 

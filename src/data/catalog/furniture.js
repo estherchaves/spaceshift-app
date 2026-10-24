@@ -342,3 +342,9 @@ const PROFILES = new Map(
 export function getItemProfile(item) {
   return PROFILES.get(item.catalogId) ?? DEFAULT_PROFILE
 }
+
+/** Preço indicativo do móvel (do catálogo) ou null se não tiver. */
+export function getItemPrice(item) {
+  const price = getCatalogEntry(item.catalogId)?.price
+  return Number.isFinite(price) ? price : null
+}

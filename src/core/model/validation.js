@@ -106,8 +106,9 @@ export function validateItem(item, path, fail) {
   if (!isObject(item.dimensions)) {
     fail(`${path}.dimensions`, 'Faltam as dimensões do móvel.')
   } else {
-    for (const key of ['width', 'depth', 'height'])
+    for (const key of ['width', 'depth'])
       checkRange(item.dimensions[key], LIMITS.item, `${path}.dimensions.${key}`, 'Dimensão do móvel', fail)
+    checkRange(item.dimensions.height, LIMITS.itemHeight, `${path}.dimensions.height`, 'Altura do móvel', fail)
   }
   if (!isHexColor(item.color)) fail(`${path}.color`, 'Cor do móvel inválida.')
   if (item.finish !== null && typeof item.finish !== 'string') fail(`${path}.finish`, 'Acabamento inválido.')

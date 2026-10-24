@@ -1,9 +1,15 @@
-import { EditorPage } from '@/pages/EditorPage/EditorPage.jsx'
+import { EditorRoute } from '@/pages/EditorPage/EditorRoute.jsx'
+import { ProjectsPage } from '@/pages/ProjectsPage/ProjectsPage.jsx'
+import { parseRoute, useHash } from './router.js'
+import { Toaster } from './Toaster.jsx'
 
-/**
- * Raiz da aplicação. Na Fase 7 passa a escolher entre a lista de
- * projetos e o editor; por agora abre diretamente o editor.
- */
+/** Raiz da aplicação: lista de projetos ou editor, conforme o endereço. */
 export default function App() {
-  return <EditorPage />
+  const route = parseRoute(useHash())
+  return (
+    <>
+      {route.name === 'editor' ? <EditorRoute key={route.projectId} projectId={route.projectId} /> : <ProjectsPage />}
+      <Toaster />
+    </>
+  )
 }
